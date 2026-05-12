@@ -6,4 +6,18 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from "./flashcard";
+export * from "./flashcardsOutput";
+export * from "./geminiConversation";
+export * from "./geminiConversationInput";
+export * from "./geminiConversationWithMessages";
+export * from "./geminiError";
+export * from "./geminiMessage";
+export * from "./geminiMessageInput";
 export * from "./healthStatus";
+export * from "./pdfAskInput";
+export * from "./pdfAskOutput";
+export * from "./quizOutput";
+export * from "./quizQuestion";
+export * from "./studyInput";
+export * from "./summaryOutput";

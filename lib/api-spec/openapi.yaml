@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: gemini
+    description: Gemini AI chat and study operations
 paths:
   /healthz:
     get:
@@ -24,6 +26,193 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /gemini/conversations:
+    get:
+      operationId: listGeminiConversations
+      tags: [gemini]
+      summary: List all conversations
+      responses:
+        "200":
+          description: List of conversations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GeminiConversation"
+    post:
+      operationId: createGeminiConversation
+      tags: [gemini]
+      summary: Create a new conversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeminiConversationInput"
+      responses:
+        "201":
+          description: Created conversation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeminiConversation"
+  /gemini/conversations/{id}:
+    get:
+      operationId: getGeminiConversation
+      tags: [gemini]
+      summary: Get conversation with messages
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Conversation with messages
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeminiConversationWithMessages"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeminiError"
+    delete:
+      operationId: deleteGeminiConversation
+      tags: [gemini]
+      summary: Delete a conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeminiError"
+  /gemini/conversations/{id}/messages:
+    get:
+      operationId: listGeminiMessages
+      tags: [gemini]
+      summary: List messages in a conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GeminiMessage"
+    post:
+      operationId: sendGeminiMessage
+      tags: [gemini]
+      summary: Send a message and receive an AI response (SSE stream)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeminiMessageInput"
+      responses:
+        "200":
+          description: SSE stream of assistant response chunks
+          content:
+            text/event-stream: {}
+  /gemini/study/flashcards:
+    post:
+      operationId: generateFlashcards
+      tags: [gemini]
+      summary: Generate AI flashcards from a topic or text
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StudyInput"
+      responses:
+        "200":
+          description: Generated flashcards
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FlashcardsOutput"
+  /gemini/study/quiz:
+    post:
+      operationId: generateQuiz
+      tags: [gemini]
+      summary: Generate a quiz from a topic or text
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StudyInput"
+      responses:
+        "200":
+          description: Generated quiz
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuizOutput"
+  /gemini/study/summarize:
+    post:
+      operationId: summarizeNotes
+      tags: [gemini]
+      summary: Summarize notes or text
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StudyInput"
+      responses:
+        "200":
+          description: Summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SummaryOutput"
+  /gemini/pdf/ask:
+    post:
+      operationId: askPdf
+      tags: [gemini]
+      summary: Ask a question about PDF text content
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PdfAskInput"
+      responses:
+        "200":
+          description: AI answer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PdfAskOutput"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +222,167 @@ components:
           type: string
       required:
         - status
-
+    GeminiConversation:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - createdAt
+    GeminiMessage:
+      type: object
+      properties:
+        id:
+          type: integer
+        conversationId:
+          type: integer
+        role:
+          type: string
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - conversationId
+        - role
+        - content
+        - createdAt
+    GeminiConversationInput:
+      type: object
+      properties:
+        title:
+          type: string
+      required:
+        - title
+    GeminiMessageInput:
+      type: object
+      properties:
+        content:
+          type: string
+      required:
+        - content
+    GeminiConversationWithMessages:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/GeminiMessage"
+      required:
+        - id
+        - title
+        - createdAt
+        - messages
+    GeminiError:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+    StudyInput:
+      type: object
+      properties:
+        topic:
+          type: string
+        text:
+          type: string
+        language:
+          type: string
+        count:
+          type: integer
+      required:
+        - topic
+    Flashcard:
+      type: object
+      properties:
+        front:
+          type: string
+        back:
+          type: string
+      required:
+        - front
+        - back
+    FlashcardsOutput:
+      type: object
+      properties:
+        flashcards:
+          type: array
+          items:
+            $ref: "#/components/schemas/Flashcard"
+      required:
+        - flashcards
+    QuizQuestion:
+      type: object
+      properties:
+        question:
+          type: string
+        options:
+          type: array
+          items:
+            type: string
+        correctIndex:
+          type: integer
+        explanation:
+          type: string
+      required:
+        - question
+        - options
+        - correctIndex
+        - explanation
+    QuizOutput:
+      type: object
+      properties:
+        questions:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuizQuestion"
+      required:
+        - questions
+    SummaryOutput:
+      type: object
+      properties:
+        summary:
+          type: string
+        keyPoints:
+          type: array
+          items:
+            type: string
+      required:
+        - summary
+        - keyPoints
+    PdfAskInput:
+      type: object
+      properties:
+        text:
+          type: string
+        question:
+          type: string
+        language:
+          type: string
+      required:
+        - text
+        - question
+    PdfAskOutput:
+      type: object
+      properties:
+        answer:
+          type: string
+      required:
+        - answer

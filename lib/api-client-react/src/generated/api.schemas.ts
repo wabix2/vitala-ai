@@ -8,3 +8,78 @@
 export interface HealthStatus {
   status: string;
 }
+
+export interface GeminiConversation {
+  id: number;
+  title: string;
+  createdAt: string;
+}
+
+export interface GeminiMessage {
+  id: number;
+  conversationId: number;
+  role: string;
+  content: string;
+  createdAt: string;
+}
+
+export interface GeminiConversationInput {
+  title: string;
+}
+
+export interface GeminiMessageInput {
+  content: string;
+}
+
+export interface GeminiConversationWithMessages {
+  id: number;
+  title: string;
+  createdAt: string;
+  messages: GeminiMessage[];
+}
+
+export interface GeminiError {
+  error: string;
+}
+
+export interface StudyInput {
+  topic: string;
+  text?: string;
+  language?: string;
+  count?: number;
+}
+
+export interface Flashcard {
+  front: string;
+  back: string;
+}
+
+export interface FlashcardsOutput {
+  flashcards: Flashcard[];
+}
+
+export interface QuizQuestion {
+  question: string;
+  options: string[];
+  correctIndex: number;
+  explanation: string;
+}
+
+export interface QuizOutput {
+  questions: QuizQuestion[];
+}
+
+export interface SummaryOutput {
+  summary: string;
+  keyPoints: string[];
+}
+
+export interface PdfAskInput {
+  text: string;
+  question: string;
+  language?: string;
+}
+
+export interface PdfAskOutput {
+  answer: string;
+}

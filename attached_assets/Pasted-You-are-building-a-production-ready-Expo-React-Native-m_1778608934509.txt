@@ -1,0 +1,158 @@
+You are building a production-ready Expo React Native mobile app called VITALA AI.
+
+GOAL:
+Generate a complete mobile app and prepare it for APK build using Expo EAS (same workflow as production apps like ChatGPT-style mobile apps).
+
+====================================================
+IMPORTANT BUILD TARGET
+====================================================
+
+- Framework: Expo React Native (latest SDK)
+- Language: TypeScript
+- Output: Android APK via EAS Build
+- Must be fully working (not demo UI)
+- Must run on real device after install
+
+====================================================
+APP NAME
+====================================================
+Vitala AI
+
+====================================================
+CORE FEATURES
+====================================================
+
+1. AUTH SYSTEM
+- Email/password login
+- Secure JWT session
+- Persistent login
+- Logout system
+
+2. AI CHAT SYSTEM (MAIN FEATURE)
+- ChatGPT-style UI
+- Streaming responses
+- Chat history saved locally + backend
+- Typing animation
+- Markdown + code rendering
+- Copy message button
+
+3. AI BACKEND INTEGRATION
+- Use Gemini API as primary AI model
+- OpenAI fallback support
+- Backend proxy required (DO NOT expose API key in frontend)
+- Rate limiting + error handling
+- Conversation memory support
+
+4. STUDY TOOLS
+- AI flashcards generator
+- Quiz generator (MCQ + answers)
+- Notes summarizer
+- Homework helper
+
+5. PDF AI
+- Upload PDF
+- Extract text
+- Ask questions from document
+- Summarize document
+
+6. MULTILINGUAL SUPPORT
+- English
+- Amharic
+- Afaan Oromo
+- Swahili
+- Arabic
+
+7. OFFLINE MODE
+- Save chats locally
+- Save flashcards
+- Cache recent conversations
+
+====================================================
+UI/UX REQUIREMENTS
+====================================================
+
+- Premium modern design (startup-level)
+- Dark/light mode
+- Smooth animations (Reanimated)
+- Bottom tab navigation
+- Glassmorphism UI style
+- Loading skeletons
+- Floating AI input bar
+
+Screens:
+- Splash screen
+- Onboarding
+- Login/Register
+- Home dashboard
+- AI Chat screen
+- Flashcards
+- Quiz screen
+- PDF AI screen
+- Profile
+- Settings
+
+====================================================
+PROJECT STRUCTURE
+====================================================
+
+/app (Expo Router)
+/components
+/screens
+/services
+/store
+/hooks
+/utils
+/backend
+
+Backend:
+- Node.js + Express API
+- AI service layer (Gemini + OpenAI)
+- Auth system (JWT)
+- Chat history storage
+
+====================================================
+EXPO + APK BUILD SETUP (IMPORTANT)
+====================================================
+
+You MUST prepare project for EAS build:
+
+- Configure app.json properly
+- Set Android package name: com.vitala.ai
+- Add icons + splash screen
+- Add permissions for file upload
+- Setup eas.json
+
+After setup, show build instructions:
+
+1. npm install
+2. npx expo install
+3. npm install -g eas-cli
+4. eas login (WAIT FOR USER INPUT)
+5. eas build:configure
+6. eas build -p android --profile preview
+
+Then output:
+- Expo build URL
+- QR / download link when build completes
+
+====================================================
+SECURITY RULES
+====================================================
+
+- Never expose API keys in frontend
+- Use .env file for secrets
+- Use backend proxy for AI requests
+- Add input validation and rate limiting
+
+====================================================
+QUALITY RULE
+====================================================
+
+This must be:
+- Production-grade app
+- Not a UI demo
+- Fully functional system
+- Ready for real APK deployment
+- Startup-level product quality
+
+The final output must allow me to generate an APK using Expo EAS like a real deployed mobile app.

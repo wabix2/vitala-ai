@@ -14,3 +14,148 @@ import * as zod from "zod";
 export const HealthCheckResponse = zod.object({
   status: zod.string(),
 });
+
+/**
+ * @summary List all conversations
+ */
+export const ListGeminiConversationsResponseItem = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  createdAt: zod.coerce.date(),
+});
+export const ListGeminiConversationsResponse = zod.array(
+  ListGeminiConversationsResponseItem,
+);
+
+/**
+ * @summary Create a new conversation
+ */
+export const CreateGeminiConversationBody = zod.object({
+  title: zod.string(),
+});
+
+/**
+ * @summary Get conversation with messages
+ */
+export const GetGeminiConversationParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetGeminiConversationResponse = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  createdAt: zod.coerce.date(),
+  messages: zod.array(
+    zod.object({
+      id: zod.number(),
+      conversationId: zod.number(),
+      role: zod.string(),
+      content: zod.string(),
+      createdAt: zod.coerce.date(),
+    }),
+  ),
+});
+
+/**
+ * @summary Delete a conversation
+ */
+export const DeleteGeminiConversationParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary List messages in a conversation
+ */
+export const ListGeminiMessagesParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const ListGeminiMessagesResponseItem = zod.object({
+  id: zod.number(),
+  conversationId: zod.number(),
+  role: zod.string(),
+  content: zod.string(),
+  createdAt: zod.coerce.date(),
+});
+export const ListGeminiMessagesResponse = zod.array(
+  ListGeminiMessagesResponseItem,
+);
+
+/**
+ * @summary Send a message and receive an AI response (SSE stream)
+ */
+export const SendGeminiMessageParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const SendGeminiMessageBody = zod.object({
+  content: zod.string(),
+});
+
+/**
+ * @summary Generate AI flashcards from a topic or text
+ */
+export const GenerateFlashcardsBody = zod.object({
+  topic: zod.string(),
+  text: zod.string().optional(),
+  language: zod.string().optional(),
+  count: zod.number().optional(),
+});
+
+export const GenerateFlashcardsResponse = zod.object({
+  flashcards: zod.array(
+    zod.object({
+      front: zod.string(),
+      back: zod.string(),
+    }),
+  ),
+});
+
+/**
+ * @summary Generate a quiz from a topic or text
+ */
+export const GenerateQuizBody = zod.object({
+  topic: zod.string(),
+  text: zod.string().optional(),
+  language: zod.string().optional(),
+  count: zod.number().optional(),
+});
+
+export const GenerateQuizResponse = zod.object({
+  questions: zod.array(
+    zod.object({
+      question: zod.string(),
+      options: zod.array(zod.string()),
+      correctIndex: zod.number(),
+      explanation: zod.string(),
+    }),
+  ),
+});
+
+/**
+ * @summary Summarize notes or text
+ */
+export const SummarizeNotesBody = zod.object({
+  topic: zod.string(),
+  text: zod.string().optional(),
+  language: zod.string().optional(),
+  count: zod.number().optional(),
+});
+
+export const SummarizeNotesResponse = zod.object({
+  summary: zod.string(),
+  keyPoints: zod.array(zod.string()),
+});
+
+/**
+ * @summary Ask a question about PDF text content
+ */
+export const AskPdfBody = zod.object({
+  text: zod.string(),
+  question: zod.string(),
+  language: zod.string().optional(),
+});
+
+export const AskPdfResponse = zod.object({
+  answer: zod.string(),
+});
