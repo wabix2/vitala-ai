@@ -1,4 +1,5 @@
 import { Feather } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Haptics from "expo-haptics";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
@@ -21,12 +22,34 @@ import { useGetGeminiConversation } from "@workspace/api-client-react";
 import { ChatBubble } from "@/components/ChatBubble";
 import { TypingIndicator } from "@/components/TypingIndicator";
 import { streamChatMessage } from "@/services/stream";
+import { useSubscription } from "@/lib/revenuecat";
+import { UsageLimitBanner } from "@/components/PremiumGate";
+
+const FREE_DAILY_LIMIT = 10;
+const USAGE_KEY = "@vitala_chat_usage";
 
 interface LocalMessage {
   id: string;
   role: "user" | "assistant";
   content: string;
   isStreaming?: boolean;
+}
+
+async function getTodayUsage(): Promise<number> {
+  const today = new Date().toDateString();
+  const raw = await AsyncStorage.getItem(USAGE_KEY);
+  if (!raw) return 0;
+  const data = JSON.parse(raw) as { date: string; count: number };
+  if (data.date !== today) return 0;
+  return data.count;
+}
+
+async function incrementUsage(): Promise<number> {
+  const today = new Date().toDateString();
+  const current = await getTodayUsage();
+  const next = current + 1;
+  await AsyncStorage.setItem(USAGE_KEY, JSON.stringify({ date: today, count: next }));
+  return next;
 }
 
 export default function ChatScreen() {
@@ -36,18 +59,24 @@ export default function ChatScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const convId = parseInt(id ?? "0", 10);
   const { user } = useAuth();
+  const { isSubscribed } = useSubscription();
   const lang = user?.language ?? "en";
 
   const [messages, setMessages] = useState<LocalMessage[]>([]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [showTyping, setShowTyping] = useState(false);
+  const [dailyUsed, setDailyUsed] = useState(0);
   const flatRef = useRef<FlatList>(null);
   const headerHeight = Platform.OS === "ios" ? 52 : 56;
 
   const { data: conv, isLoading } = useGetGeminiConversation(convId, {
     query: { enabled: !!convId },
   });
+
+  useEffect(() => {
+    getTodayUsage().then(setDailyUsed);
+  }, []);
 
   useEffect(() => {
     if (conv?.messages) {
@@ -61,11 +90,21 @@ export default function ChatScreen() {
     }
   }, [conv]);
 
+  const atLimit = !isSubscribed && dailyUsed >= FREE_DAILY_LIMIT;
+
   const handleSend = useCallback(async () => {
     if (!input.trim() || isStreaming) return;
+    if (atLimit) {
+      router.push("/paywall");
+      return;
+    }
+
     const text = input.trim();
     setInput("");
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    const newCount = await incrementUsage();
+    setDailyUsed(newCount);
 
     const userMsg: LocalMessage = {
       id: `u-${Date.now()}`,
@@ -124,7 +163,7 @@ export default function ChatScreen() {
         ]);
       },
     );
-  }, [input, isStreaming, convId, lang]);
+  }, [input, isStreaming, convId, lang, atLimit, router]);
 
   const title = conv?.title ?? "Chat";
 
@@ -149,7 +188,13 @@ export default function ChatScreen() {
             {title}
           </Text>
         </View>
-        <View style={styles.placeholder} />
+        {!isSubscribed && (
+          <Pressable onPress={() => router.push("/paywall")} style={[styles.proBtn, { backgroundColor: `${colors.primary}15` }]}>
+            <Feather name="zap" size={13} color={colors.primary} />
+            <Text style={[styles.proBtnText, { color: colors.primary }]}>Pro</Text>
+          </Pressable>
+        )}
+        {isSubscribed && <View style={styles.placeholder} />}
       </View>
 
       <KeyboardAvoidingView
@@ -157,6 +202,14 @@ export default function ChatScreen() {
         behavior="padding"
         keyboardVerticalOffset={headerHeight + (Platform.OS === "ios" ? insets.top : 0)}
       >
+        {!isSubscribed && (
+          <UsageLimitBanner
+            used={dailyUsed}
+            limit={FREE_DAILY_LIMIT}
+            label="messages"
+          />
+        )}
+
         {isLoading ? (
           <View style={styles.loadingCenter}>
             <ActivityIndicator color={colors.primary} />
@@ -190,6 +243,11 @@ export default function ChatScreen() {
                 <Text style={[styles.emptyChatDesc, { color: colors.mutedForeground }]}>
                   I can help you study, explain concepts, solve problems, and more.
                 </Text>
+                {!isSubscribed && (
+                  <Text style={[styles.freeHint, { color: colors.mutedForeground }]}>
+                    Free plan: {FREE_DAILY_LIMIT - dailyUsed} messages left today
+                  </Text>
+                )}
               </View>
             }
           />
@@ -208,26 +266,39 @@ export default function ChatScreen() {
           <TextInput
             style={[
               styles.input,
-              { backgroundColor: colors.surfaceAlt, color: colors.foreground, borderColor: colors.border },
+              {
+                backgroundColor: atLimit ? `${colors.surfaceAlt}80` : colors.surfaceAlt,
+                color: colors.foreground,
+                borderColor: atLimit ? "#FF444440" : colors.border,
+              },
             ]}
-            placeholder="Ask Vitala anything..."
-            placeholderTextColor={colors.mutedForeground}
+            placeholder={atLimit ? "Daily limit reached — upgrade to Pro" : "Ask Vitala anything..."}
+            placeholderTextColor={atLimit ? "#FF4444" : colors.mutedForeground}
             value={input}
             onChangeText={setInput}
             multiline
             maxLength={2000}
             returnKeyType="default"
+            editable={!atLimit}
           />
           <Pressable
-            onPress={handleSend}
-            disabled={!input.trim() || isStreaming}
+            onPress={atLimit ? () => router.push("/paywall") : handleSend}
+            disabled={(!input.trim() || isStreaming) && !atLimit}
             style={[
               styles.sendBtn,
-              { backgroundColor: input.trim() && !isStreaming ? colors.primary : colors.muted },
+              {
+                backgroundColor: atLimit
+                  ? "#FF444425"
+                  : input.trim() && !isStreaming
+                  ? colors.primary
+                  : colors.muted,
+              },
             ]}
           >
             {isStreaming ? (
               <ActivityIndicator size="small" color={colors.mutedForeground} />
+            ) : atLimit ? (
+              <Feather name="lock" size={18} color="#FF4444" />
             ) : (
               <Feather
                 name="send"
@@ -262,12 +333,15 @@ const styles = StyleSheet.create({
   aiDot: { width: 8, height: 8, borderRadius: 4 },
   headerTitle: { fontSize: 16, fontFamily: "Inter_600SemiBold", flex: 1 },
   placeholder: { width: 30 },
+  proBtn: { flexDirection: "row", alignItems: "center", gap: 4, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 },
+  proBtnText: { fontSize: 12, fontFamily: "Inter_700Bold" },
   loadingCenter: { flex: 1, alignItems: "center", justifyContent: "center" },
   listContent: { paddingVertical: 12 },
   emptyChat: { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 40, paddingVertical: 60, gap: 12 },
   emptyChatIcon: { width: 64, height: 64, borderRadius: 18, alignItems: "center", justifyContent: "center", marginBottom: 8 },
   emptyChatTitle: { fontSize: 18, fontFamily: "Inter_600SemiBold" },
   emptyChatDesc: { fontSize: 14, fontFamily: "Inter_400Regular", textAlign: "center", lineHeight: 21 },
+  freeHint: { fontSize: 12, fontFamily: "Inter_400Regular", marginTop: 4 },
   inputBar: {
     flexDirection: "row",
     gap: 10,
