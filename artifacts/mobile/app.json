@@ -14,13 +14,18 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.vitala.ai"
+      "bundleIdentifier": "com.vitala.ai",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "Vitala AI saves your achievement cards to your camera roll so you can share them.",
+        "NSPhotoLibraryAddUsageDescription": "Vitala AI saves your achievement cards to your camera roll so you can share them."
+      }
     },
     "android": {
       "package": "com.vitala.ai",
       "permissions": [
         "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE"
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_MEDIA_IMAGES"
       ]
     },
     "web": {
@@ -36,7 +41,14 @@
       "expo-font",
       "expo-web-browser",
       "expo-document-picker",
-      "react-native-purchases"
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Vitala AI saves your achievement cards to your camera roll.",
+          "savePhotosPermission": "Vitala AI saves your achievement cards to your camera roll.",
+          "isAccessMediaLocationEnabled": false
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
