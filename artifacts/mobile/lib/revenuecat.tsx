@@ -6,10 +6,20 @@ const REVENUECAT_API_KEY = process.env.EXPO_PUBLIC_REVENUECAT_API_KEY ?? "";
 
 export const ENTITLEMENT_ID = "pro";
 
+let rcInitialized = false;
+
 export function initializeRevenueCat() {
-  if (!REVENUECAT_API_KEY) throw new Error("RevenueCat API key not set");
-  Purchases.setLogLevel(LOG_LEVEL.DEBUG);
-  Purchases.configure({ apiKey: REVENUECAT_API_KEY });
+  if (!REVENUECAT_API_KEY) {
+    console.warn("[RevenueCat] EXPO_PUBLIC_REVENUECAT_API_KEY not set — purchases disabled");
+    return;
+  }
+  try {
+    Purchases.setLogLevel(LOG_LEVEL.WARN);
+    Purchases.configure({ apiKey: REVENUECAT_API_KEY });
+    rcInitialized = true;
+  } catch (err) {
+    console.warn("[RevenueCat] init failed:", err);
+  }
 }
 
 function useSubscriptionContext() {
@@ -17,16 +27,16 @@ function useSubscriptionContext() {
 
   const customerInfoQuery = useQuery({
     queryKey: ["revenuecat", "customer-info"] as const,
-    queryFn: () => Purchases.getCustomerInfo(),
+    queryFn: () => (rcInitialized ? Purchases.getCustomerInfo() : Promise.resolve(null)),
     staleTime: 60_000,
-    retry: 2,
+    retry: 1,
   });
 
   const offeringsQuery = useQuery({
     queryKey: ["revenuecat", "offerings"] as const,
-    queryFn: () => Purchases.getOfferings(),
+    queryFn: () => (rcInitialized ? Purchases.getOfferings() : Promise.resolve(null)),
     staleTime: 300_000,
-    retry: 2,
+    retry: 1,
   });
 
   const purchaseMutation = useMutation({
@@ -47,7 +57,7 @@ function useSubscriptionContext() {
   });
 
   const isSubscribed =
-    (customerInfoQuery.data?.entitlements.active as Record<string, unknown>)?.[ENTITLEMENT_ID] !== undefined;
+    (customerInfoQuery.data?.entitlements?.active as Record<string, unknown>)?.[ENTITLEMENT_ID] !== undefined;
 
   return {
     customerInfo: customerInfoQuery.data ?? null,
@@ -60,6 +70,7 @@ function useSubscriptionContext() {
     isRestoring: restoreMutation.isPending,
     purchaseError: purchaseMutation.error,
     refetchCustomerInfo: customerInfoQuery.refetch,
+    rcAvailable: rcInitialized,
   };
 }
 

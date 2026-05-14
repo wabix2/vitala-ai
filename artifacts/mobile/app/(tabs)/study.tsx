@@ -18,45 +18,14 @@ import { useTheme } from "@/context/ThemeContext";
 import { useAuth } from "@/context/AuthContext";
 import { t } from "@/lib/i18n";
 import { useSubscription } from "@/lib/revenuecat";
-import { PremiumGate } from "@/components/PremiumGate";
 
 const TOOLS = [
-  {
-    icon: "layers" as const,
-    label: "Flashcards",
-    desc: "Generate study cards from any topic",
-    color: "#7B7FFF",
-    route: "/study/flashcards",
-    badge: "AI",
-    pro: false,
-  },
-  {
-    icon: "check-square" as const,
-    label: "Quiz Generator",
-    desc: "Test your knowledge with MCQ quizzes",
-    color: "#00D4AA",
-    route: "/study/quiz",
-    badge: "AI",
-    pro: false,
-  },
-  {
-    icon: "edit-3" as const,
-    label: "Extended Flashcards",
-    desc: "Up to 30 cards per set — deep dive study",
-    color: "#F97316",
-    route: "/study/flashcards",
-    badge: "Pro",
-    pro: true,
-  },
-  {
-    icon: "bar-chart-2" as const,
-    label: "Extended Quizzes",
-    desc: "Up to 20 questions for thorough testing",
-    color: "#EC4899",
-    route: "/study/quiz",
-    badge: "Pro",
-    pro: true,
-  },
+  { icon: "layers" as const, label: "Flashcards", desc: "Generate study cards from any topic", color: "#7B7FFF", route: "/study/flashcards", badge: "AI", pro: false },
+  { icon: "check-square" as const, label: "Quiz Generator", desc: "Test your knowledge with MCQ quizzes", color: "#00D4AA", route: "/study/quiz", badge: "AI", pro: false },
+  { icon: "edit-3" as const, label: "Extended Flashcards", desc: "Up to 30 cards per set — deep dive study", color: "#F97316", route: "/study/flashcards", badge: "Pro", pro: true },
+  { icon: "bar-chart-2" as const, label: "Extended Quizzes", desc: "Up to 20 questions for thorough testing", color: "#EC4899", route: "/study/quiz", badge: "Pro", pro: true },
+  { icon: "clock" as const, label: "Focus Timer", desc: "Pomodoro timer to maximize study sessions", color: "#8B5CF6", route: "/timer", badge: "Pro", pro: true },
+  { icon: "calendar" as const, label: "AI Study Plan", desc: "Get a personalized 7-day study schedule", color: "#14B8A6", route: "/study-plan", badge: "Pro", pro: true },
 ];
 
 export default function StudyScreen() {
@@ -76,59 +45,34 @@ export default function StudyScreen() {
         style={[styles.header, { paddingTop: topPadding + 12 }]}
       >
         <Text style={[styles.title, { color: colors.foreground }]}>{t("study", lang)}</Text>
-        <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
-          AI-powered study tools
-        </Text>
+        <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>AI-powered study tools</Text>
       </LinearGradient>
 
-      <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={[styles.content, { paddingBottom: 100 }]}
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView style={styles.scroll} contentContainerStyle={[styles.content, { paddingBottom: 100 }]} showsVerticalScrollIndicator={false}>
         {TOOLS.map((tool, i) => {
           const isLocked = tool.pro && !isSubscribed;
           return (
-            <Animated.View key={tool.label} entering={FadeInDown.duration(400).delay(i * 80)}>
+            <Animated.View key={tool.label} entering={FadeInDown.duration(400).delay(i * 70)}>
               <Pressable
-                onPress={() => {
-                  if (isLocked) {
-                    router.push("/paywall");
-                  } else {
-                    router.push(tool.route as never);
-                  }
-                }}
+                onPress={() => isLocked ? router.push("/paywall") : router.push(tool.route as never)}
                 style={[styles.card, { backgroundColor: colors.card, borderColor: isLocked ? `${tool.color}40` : colors.border }]}
               >
-                <LinearGradient
-                  colors={[`${tool.color}20`, `${tool.color}08`]}
-                  style={styles.cardGradient}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                >
+                <LinearGradient colors={[`${tool.color}20`, `${tool.color}08`]} style={styles.cardGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
                   <View style={styles.cardRow}>
                     <View style={[styles.iconBox, { backgroundColor: `${tool.color}20` }]}>
                       <Feather name={tool.icon} size={26} color={isLocked ? `${tool.color}80` : tool.color} />
                     </View>
                     <View style={styles.cardText}>
                       <View style={styles.labelRow}>
-                        <Text style={[styles.cardTitle, { color: isLocked ? colors.mutedForeground : colors.foreground }]}>
-                          {tool.label}
-                        </Text>
-                        <View style={[styles.badge, { backgroundColor: tool.pro ? `${tool.color}25` : `${tool.color}20` }]}>
+                        <Text style={[styles.cardTitle, { color: isLocked ? colors.mutedForeground : colors.foreground }]}>{tool.label}</Text>
+                        <View style={[styles.badge, { backgroundColor: `${tool.color}25` }]}>
                           {tool.pro && <Feather name="zap" size={10} color={tool.color} />}
                           <Text style={[styles.badgeText, { color: tool.color }]}>{tool.badge}</Text>
                         </View>
                       </View>
-                      <Text style={[styles.cardDesc, { color: colors.mutedForeground }]}>
-                        {tool.desc}
-                      </Text>
+                      <Text style={[styles.cardDesc, { color: colors.mutedForeground }]}>{tool.desc}</Text>
                     </View>
-                    {isLocked ? (
-                      <Feather name="lock" size={18} color={`${tool.color}60`} />
-                    ) : (
-                      <Feather name="chevron-right" size={20} color={colors.mutedForeground} />
-                    )}
+                    {isLocked ? <Feather name="lock" size={18} color={`${tool.color}60`} /> : <Feather name="chevron-right" size={20} color={colors.mutedForeground} />}
                   </View>
                 </LinearGradient>
               </Pressable>
@@ -137,27 +81,15 @@ export default function StudyScreen() {
         })}
 
         {!isSubscribed && (
-          <Animated.View entering={FadeInDown.duration(400).delay(TOOLS.length * 80)}>
-            <Pressable
-              style={[styles.proCallout, { backgroundColor: `${"#7B7FFF"}12`, borderColor: `${"#7B7FFF"}30` }]}
-              onPress={() => router.push("/paywall")}
-            >
-              <LinearGradient
-                colors={["#7B7FFF20", "#00D4AA10"]}
-                style={styles.proCalloutInner}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-              >
+          <Animated.View entering={FadeInDown.duration(400).delay(TOOLS.length * 70)}>
+            <Pressable style={[styles.proCallout, { backgroundColor: "#7B7FFF12", borderColor: "#7B7FFF30" }]} onPress={() => router.push("/paywall")}>
+              <LinearGradient colors={["#7B7FFF20", "#00D4AA10"]} style={styles.proCalloutInner} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
                 <View style={[styles.proCalloutIcon, { backgroundColor: "#7B7FFF20" }]}>
                   <Feather name="zap" size={22} color="#7B7FFF" />
                 </View>
                 <View style={styles.proCalloutText}>
-                  <Text style={[styles.proCalloutTitle, { color: colors.foreground }]}>
-                    Unlock all Pro tools
-                  </Text>
-                  <Text style={[styles.proCalloutDesc, { color: colors.mutedForeground }]}>
-                    Extended quizzes, more flashcards & unlimited chat
-                  </Text>
+                  <Text style={[styles.proCalloutTitle, { color: colors.foreground }]}>Unlock all 4 Pro tools</Text>
+                  <Text style={[styles.proCalloutDesc, { color: colors.mutedForeground }]}>Timer, study plan, extended quizzes & flashcards</Text>
                 </View>
                 <Feather name="arrow-right" size={18} color="#7B7FFF" />
               </LinearGradient>
@@ -178,13 +110,7 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: 16, paddingTop: 16, gap: 12 },
   card: { borderRadius: 18, borderWidth: 1, overflow: "hidden" },
   cardGradient: { padding: 4 },
-  cardRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
-    padding: 14,
-    backgroundColor: "transparent",
-  },
+  cardRow: { flexDirection: "row", alignItems: "center", gap: 14, padding: 14, backgroundColor: "transparent" },
   iconBox: { width: 52, height: 52, borderRadius: 14, alignItems: "center", justifyContent: "center" },
   cardText: { flex: 1, gap: 4 },
   labelRow: { flexDirection: "row", alignItems: "center", gap: 8 },

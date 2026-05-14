@@ -20,11 +20,14 @@ import { useTheme } from "@/context/ThemeContext";
 import { useSubscription } from "@/lib/revenuecat";
 
 const PERKS = [
-  { icon: "message-circle", label: "Unlimited AI Chat", desc: "No daily message limits" },
-  { icon: "layers", label: "Unlimited Flashcards", desc: "Up to 30 cards per set" },
-  { icon: "check-square", label: "Extended Quizzes", desc: "Up to 20 questions" },
+  { icon: "message-circle", label: "Unlimited AI Chat", desc: "No daily message limits, ever" },
+  { icon: "layers", label: "Extended Flashcards", desc: "Up to 30 cards per set" },
+  { icon: "check-square", label: "Extended Quizzes", desc: "Up to 20 questions per quiz" },
   { icon: "file-text", label: "Unlimited PDF Analysis", desc: "Multiple documents at once" },
-  { icon: "clock", label: "Unlimited Chat History", desc: "All chats saved forever" },
+  { icon: "clock", label: "Focus Timer (Pomodoro)", desc: "25/5/15 min timed study sessions" },
+  { icon: "calendar", label: "AI Study Plan", desc: "Personalized 7-day study schedule" },
+  { icon: "bar-chart-2", label: "Progress Analytics", desc: "Streaks, sessions & learning stats" },
+  { icon: "award", label: "Full Leaderboard Access", desc: "See all learners' streak rankings" },
   { icon: "zap", label: "Priority AI Responses", desc: "Faster generation speed" },
 ];
 
@@ -98,7 +101,7 @@ export default function PaywallScreen() {
           </View>
           <Text style={[styles.proTitle, { color: colors.foreground }]}>You're already Pro!</Text>
           <Text style={[styles.proDesc, { color: colors.mutedForeground }]}>
-            All premium features are unlocked and active.
+            All 9 premium features are unlocked and active.
           </Text>
           <Pressable
             style={[styles.doneBtn, { backgroundColor: colors.primary }]}
@@ -134,26 +137,24 @@ export default function PaywallScreen() {
             <View style={[styles.heroIcon, { backgroundColor: `${colors.primary}20` }]}>
               <Feather name="zap" size={36} color={colors.primary} />
             </View>
-            <Text style={[styles.heroTitle, { color: colors.foreground }]}>
-              Vitala AI Pro
-            </Text>
+            <Text style={[styles.heroTitle, { color: colors.foreground }]}>Vitala AI Pro</Text>
             <Text style={[styles.heroSubtitle, { color: colors.mutedForeground }]}>
-              Unlock your full learning potential
+              9 powerful features to supercharge your learning
             </Text>
           </LinearGradient>
         </Animated.View>
 
-        <Animated.View entering={FadeInDown.duration(500).delay(100)} style={styles.perksSection}>
+        <Animated.View entering={FadeInDown.duration(500).delay(100)} style={[styles.perksSection, { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 }]}>
           {PERKS.map((perk, i) => (
             <View key={perk.label} style={[styles.perkRow, { borderBottomColor: colors.border, borderBottomWidth: i < PERKS.length - 1 ? 1 : 0 }]}>
               <View style={[styles.perkIcon, { backgroundColor: `${colors.primary}15` }]}>
-                <Feather name={perk.icon as any} size={18} color={colors.primary} />
+                <Feather name={perk.icon as any} size={17} color={colors.primary} />
               </View>
               <View style={styles.perkText}>
                 <Text style={[styles.perkLabel, { color: colors.foreground }]}>{perk.label}</Text>
                 <Text style={[styles.perkDesc, { color: colors.mutedForeground }]}>{perk.desc}</Text>
               </View>
-              <Feather name="check" size={16} color={colors.accent} />
+              <Feather name="check" size={15} color={colors.accent} />
             </View>
           ))}
         </Animated.View>
@@ -164,9 +165,12 @@ export default function PaywallScreen() {
           {isLoading ? (
             <ActivityIndicator color={colors.primary} style={{ marginVertical: 24 }} />
           ) : packages.length === 0 ? (
-            <Text style={[styles.noPkgs, { color: colors.mutedForeground }]}>
-              No plans available right now. Please try again later.
-            </Text>
+            <View style={[styles.noPkgsCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <Feather name="wifi-off" size={24} color={colors.mutedForeground} />
+              <Text style={[styles.noPkgs, { color: colors.mutedForeground }]}>
+                No plans available right now. Please try again later.
+              </Text>
+            </View>
           ) : (
             packages.map((pkg: any) => {
               const color = getPlanColor(pkg.identifier);
@@ -175,13 +179,7 @@ export default function PaywallScreen() {
               return (
                 <Pressable
                   key={pkg.identifier}
-                  style={[
-                    styles.planCard,
-                    {
-                      borderColor: isSelected ? color : colors.border,
-                      backgroundColor: isSelected ? `${color}12` : colors.card,
-                    },
-                  ]}
+                  style={[styles.planCard, { borderColor: isSelected ? color : colors.border, backgroundColor: isSelected ? `${color}12` : colors.card }]}
                   onPress={() => setSelectedPkg(pkg.identifier)}
                 >
                   {badge && (
@@ -194,9 +192,7 @@ export default function PaywallScreen() {
                       {isSelected && <View style={[styles.radioInner, { backgroundColor: color }]} />}
                     </View>
                     <View style={styles.planInfo}>
-                      <Text style={[styles.planName, { color: colors.foreground }]}>
-                        {getPlanLabel(pkg.identifier)}
-                      </Text>
+                      <Text style={[styles.planName, { color: colors.foreground }]}>{getPlanLabel(pkg.identifier)}</Text>
                       <Text style={[styles.planPrice, { color }]}>
                         {pkg.product.priceString}
                         {pkg.packageType !== "LIFETIME" && (
@@ -222,19 +218,8 @@ export default function PaywallScreen() {
 
         <Animated.View entering={FadeInDown.duration(500).delay(300)} style={styles.actionsSection}>
           <Pressable
-            style={[
-              styles.subscribeBtn,
-              {
-                backgroundColor: selectedPkg
-                  ? getPlanColor(selectedPkg)
-                  : colors.muted,
-                opacity: isPurchasing ? 0.7 : 1,
-              },
-            ]}
-            onPress={() => {
-              if (!selectedPkg) return;
-              setShowConfirm(true);
-            }}
+            style={[styles.subscribeBtn, { backgroundColor: selectedPkg ? getPlanColor(selectedPkg) : colors.muted, opacity: isPurchasing ? 0.7 : 1 }]}
+            onPress={() => { if (!selectedPkg) return; setShowConfirm(true); }}
             disabled={!selectedPkg || isPurchasing}
           >
             {isPurchasing ? (
@@ -249,17 +234,11 @@ export default function PaywallScreen() {
             )}
           </Pressable>
 
-          <Pressable
-            style={styles.restoreBtn}
-            onPress={handleRestore}
-            disabled={isRestoring}
-          >
+          <Pressable style={styles.restoreBtn} onPress={handleRestore} disabled={isRestoring}>
             {isRestoring ? (
               <ActivityIndicator size="small" color={colors.mutedForeground} />
             ) : (
-              <Text style={[styles.restoreText, { color: colors.mutedForeground }]}>
-                Restore purchases
-              </Text>
+              <Text style={[styles.restoreText, { color: colors.mutedForeground }]}>Restore purchases</Text>
             )}
           </Pressable>
 
@@ -269,12 +248,7 @@ export default function PaywallScreen() {
         </Animated.View>
       </ScrollView>
 
-      <Modal
-        visible={showConfirm}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowConfirm(false)}
-      >
+      <Modal visible={showConfirm} transparent animationType="fade" onRequestClose={() => setShowConfirm(false)}>
         <Pressable style={styles.modalOverlay} onPress={() => setShowConfirm(false)}>
           <View style={[styles.confirmSheet, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <Feather name="zap" size={32} color={colors.primary} style={{ alignSelf: "center", marginBottom: 12 }} />
@@ -287,16 +261,10 @@ export default function PaywallScreen() {
               . This will be charged to your app store account.
             </Text>
             <View style={styles.confirmBtns}>
-              <Pressable
-                style={[styles.confirmCancelBtn, { borderColor: colors.border }]}
-                onPress={() => setShowConfirm(false)}
-              >
+              <Pressable style={[styles.confirmCancelBtn, { borderColor: colors.border }]} onPress={() => setShowConfirm(false)}>
                 <Text style={[styles.confirmCancelText, { color: colors.foreground }]}>Cancel</Text>
               </Pressable>
-              <Pressable
-                style={[styles.confirmOkBtn, { backgroundColor: selectedPkg ? getPlanColor(selectedPkg) : colors.primary }]}
-                onPress={handlePurchase}
-              >
+              <Pressable style={[styles.confirmOkBtn, { backgroundColor: selectedPkg ? getPlanColor(selectedPkg) : colors.primary }]} onPress={handlePurchase}>
                 <Text style={styles.confirmOkText}>Confirm</Text>
               </Pressable>
             </View>
@@ -316,17 +284,18 @@ const styles = StyleSheet.create({
   heroIcon: { width: 72, height: 72, borderRadius: 20, alignItems: "center", justifyContent: "center", marginBottom: 4 },
   heroTitle: { fontSize: 28, fontFamily: "Inter_700Bold", letterSpacing: -0.5 },
   heroSubtitle: { fontSize: 15, fontFamily: "Inter_400Regular", textAlign: "center" },
-  perksSection: { marginHorizontal: 16, borderRadius: 18, overflow: "hidden", marginBottom: 16, backgroundColor: "transparent" },
-  perkRow: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 14, paddingHorizontal: 16 },
-  perkIcon: { width: 36, height: 36, borderRadius: 10, alignItems: "center", justifyContent: "center" },
+  perksSection: { marginHorizontal: 16, borderRadius: 18, overflow: "hidden", marginBottom: 16 },
+  perkRow: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 11, paddingHorizontal: 16 },
+  perkIcon: { width: 32, height: 32, borderRadius: 9, alignItems: "center", justifyContent: "center" },
   perkText: { flex: 1 },
-  perkLabel: { fontSize: 14, fontFamily: "Inter_600SemiBold" },
-  perkDesc: { fontSize: 12, fontFamily: "Inter_400Regular", marginTop: 1 },
+  perkLabel: { fontSize: 13, fontFamily: "Inter_600SemiBold" },
+  perkDesc: { fontSize: 11, fontFamily: "Inter_400Regular", marginTop: 1 },
   plansSection: { paddingHorizontal: 16, marginBottom: 16 },
   plansTitle: { fontSize: 17, fontFamily: "Inter_700Bold", marginBottom: 12 },
-  noPkgs: { fontSize: 14, fontFamily: "Inter_400Regular", textAlign: "center", paddingVertical: 16 },
+  noPkgsCard: { borderRadius: 16, borderWidth: 1, padding: 24, alignItems: "center", gap: 10 },
+  noPkgs: { fontSize: 14, fontFamily: "Inter_400Regular", textAlign: "center" },
   planCard: { borderRadius: 16, borderWidth: 2, padding: 16, marginBottom: 10, position: "relative" },
-  planBadge: { position: "absolute", top: -1, right: 14, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 0, borderBottomLeftRadius: 8, borderBottomRightRadius: 8 },
+  planBadge: { position: "absolute", top: -1, right: 14, paddingHorizontal: 10, paddingVertical: 4, borderBottomLeftRadius: 8, borderBottomRightRadius: 8 },
   planBadgeText: { color: "#fff", fontSize: 11, fontFamily: "Inter_700Bold" },
   planRow: { flexDirection: "row", alignItems: "center", gap: 14 },
   radio: { width: 22, height: 22, borderRadius: 11, borderWidth: 2, alignItems: "center", justifyContent: "center" },
