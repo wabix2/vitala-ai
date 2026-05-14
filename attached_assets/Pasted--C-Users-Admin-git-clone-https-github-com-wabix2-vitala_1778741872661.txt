@@ -1,0 +1,62 @@
+
+C:\Users\Admin>git clone https://github.com/wabix2/vitala-ai.git
+Cloning into 'vitala-ai'...
+remote: Enumerating objects: 289, done.
+remote: Counting objects: 100% (289/289), done.
+remote: Compressing objects: 100% (218/218), done.
+remote: Total 289 (delta 47), reused 289 (delta 47), pack-reused 0 (from 0)
+Receiving objects: 100% (289/289), 1.25 MiB | 1.77 MiB/s, done.
+Resolving deltas: 100% (47/47), done.
+
+C:\Users\Admin>cd vitala-ai
+
+C:\Users\Admin\vitala-ai>pnpm installcd C:\Users\Admin
+Scope: all 10 workspace projects
+Lockfile is up to date, resolution step is skipped
+Packages: +1124
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Downloading react-native@0.81.5: 24.76 MB/24.76 MB, done
+Progress: resolved 1124, reused 5, downloaded 1093, added 1124, done
+
+devDependencies:
++ prettier 3.8.1
++ typescript 5.9.3
+
+. preinstall$ sh -c 'rm -f package-lock.json yarn.lock; case "$npm_config_user_agent" in pnpm/*) …
+│ 'sh' is not recognized as an internal or external command,
+│ operable program or batch file.
+└─ Failed in 443ms at C:\Users\Admin\vitala-ai
+[ELIFECYCLE] Command failed with exit code 1.
+[ERROR] Command failed with exit code 1: "C:\Program Files\nodejs\node.exe" "C:\Users\Admin\AppData\Roaming\npm\node_modules\pnpm\bin\pnpm.mjs" install
+
+pnpm: Command failed with exit code 1: "C:\Program Files\nodejs\node.exe" "C:\Users\Admin\AppData\Roaming\npm\node_modules\pnpm\bin\pnpm.mjs" install
+    at getFinalError (file:///C:/Users/Admin/AppData/Roaming/npm/node_modules/pnpm/dist/pnpm.mjs:28661:14)
+    at makeError (file:///C:/Users/Admin/AppData/Roaming/npm/node_modules/pnpm/dist/pnpm.mjs:30968:21)
+    at getSyncResult (file:///C:/Users/Admin/AppData/Roaming/npm/node_modules/pnpm/dist/pnpm.mjs:32812:10)
+    at spawnSubprocessSync (file:///C:/Users/Admin/AppData/Roaming/npm/node_modules/pnpm/dist/pnpm.mjs:32772:14)
+    at execaCoreSync (file:///C:/Users/Admin/AppData/Roaming/npm/node_modules/pnpm/dist/pnpm.mjs:32702:23)
+    at callBoundExeca (file:///C:/Users/Admin/AppData/Roaming/npm/node_modules/pnpm/dist/pnpm.mjs:35230:23)
+    at boundExeca (file:///C:/Users/Admin/AppData/Roaming/npm/node_modules/pnpm/dist/pnpm.mjs:35207:49)
+    at sync (file:///C:/Users/Admin/AppData/Roaming/npm/node_modules/pnpm/dist/pnpm.mjs:35366:10)
+    at runPnpmCli (file:///C:/Users/Admin/AppData/Roaming/npm/node_modules/pnpm/dist/pnpm.mjs:211039:5)
+    at runDepsStatusCheck (file:///C:/Users/Admin/AppData/Roaming/npm/node_modules/pnpm/dist/pnpm.mjs:212745:7)
+
+C:\Users\Admin\vitala-ai>rmdir /s /q vitala-ai
+The system cannot find the file specified.
+
+C:\Users\Admin\vitala-ai>git clone https://github.com/wabix2/vitala-ai.git
+Cloning into 'vitala-ai'...
+remote: Enumerating objects: 289, done.
+remote: Counting objects: 100% (289/289), done.
+remote: Compressing objects: 100% (218/218), done.
+remote: Total 289 (delta 47), reused 289 (delta 47), pack-reused 0 (from 0)
+Receiving objects: 100% (289/289), 1.25 MiB | 1.83 MiB/s, done.
+Resolving deltas: 100% (47/47), done.
+
+C:\Users\Admin\vitala-ai>cd vitala-ai
+
+C:\Users\Admin\vitala-ai\vitala-ai>pnpm install
+
+
+
+
