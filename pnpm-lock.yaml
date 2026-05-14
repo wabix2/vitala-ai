@@ -153,6 +153,10 @@ overrides:
 importers:
 
   .:
+    dependencies:
+      '@replit/revenuecat-sdk':
+        specifier: ^4.2.0
+        version: 4.2.0(typescript@5.9.3)
     devDependencies:
       prettier:
         specifier: ^3.8.1
@@ -227,6 +231,9 @@ importers:
       expo-file-system:
         specifier: ^55.0.19
         version: 55.0.19(expo@54.0.34)(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))
+      react-native-purchases:
+        specifier: ^10.1.0
+        version: 10.1.0(react-native-web@0.21.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
     devDependencies:
       '@babel/core':
         specifier: ^7.25.2
@@ -2252,11 +2259,25 @@ packages:
   '@react-navigation/routers@7.5.5':
     resolution: {integrity: sha512-9/hhMte12Kgu+pMnLfA4EWJ0OQmIEAMVMX06FPH2yGkEQSQ3JhhCN/GkcRikzQhtEi97VYYQA15umptBUShcOQ==}
 
+  '@replit/revenuecat-sdk@4.2.0':
+    resolution: {integrity: sha512-6y1qm4Wn9vJHKy9h6XAUHj8fPbblN6vu+poHD8fPpoTiSk8fv4RevH/EfXLQLusBmWrRDQ4fkYCUoT5Pfe3Cyg==}
+    peerDependencies:
+      typescript: ^5
+
   '@replit/vite-plugin-cartographer@0.5.1':
     resolution: {integrity: sha512-KiaQMx4ssTM8hSjMFscyIV1PN1bRVCWCFqN3fXOfXa39uFFCKUaeL3VvH/sxuy7S7ET+MCFOt+J7lLtL56bRrA==}
 
   '@replit/vite-plugin-runtime-error-modal@0.0.6':
     resolution: {integrity: sha512-53iuzLsrvcUnWxAo0fvNrUhOf7LYJ+3at61dZeTIrkaZD4vGNjTbvE0j50TFcjjTC9UM74uprlnQ4+L2A//Cjg==}
+
+  '@revenuecat/purchases-js-hybrid-mappings@18.4.0':
+    resolution: {integrity: sha512-E1Zf2ysAaMW6/ZvZPFvHjyXRE/GdqFWhcOfB6VKdA80mzAlEVS3jzV8DULUWv0QozCq8GnuLMOJZ/4+komt0+w==}
+
+  '@revenuecat/purchases-js@1.38.0':
+    resolution: {integrity: sha512-msSN9lPwILbHuZQQKwfQ8xfjrci7MyZINQNnUUnFBiZvYsWxd+2Cfc4poNt98ymdD5k5nYRiGuwhTs5PgNEQcw==}
+
+  '@revenuecat/purchases-typescript-internal@18.4.0':
+    resolution: {integrity: sha512-WpFxi/1xaCeJ4iOo1r/1LY1747fEAECL7jSBo1k4SGuXM/eUGDcLAiMjOQt6TPjN2kXKRsN97u4VzOSMMM68WA==}
 
   '@rolldown/pluginutils@1.0.0-rc.3':
     resolution: {integrity: sha512-eybk3TjzzzV97Dlj5c+XrBFW57eTNhzod66y9HrBlzJ6NsCrWCp/2kaPS3K9wJmurBC0Tdw4yPjXKZqlznim3Q==}
@@ -4925,6 +4946,16 @@ packages:
       react: '*'
       react-native: '*'
       react-native-reanimated: '>=3.0.0'
+
+  react-native-purchases@10.1.0:
+    resolution: {integrity: sha512-Y3SOfcydX7lPPNHGU0bxV1xV34VBKEEEZsA5cCv1lae61Iv5Cr7+b7TVooDwSULiERCSBcgW1c9WhwrLNzuwQA==}
+    peerDependencies:
+      react: '>= 16.6.3'
+      react-native: '>= 0.73.0'
+      react-native-web: '*'
+    peerDependenciesMeta:
+      react-native-web:
+        optional: true
 
   react-native-reanimated@4.1.7:
     resolution: {integrity: sha512-Q4H6xA3Tn7QL0/E/KjI86I1KK4tcf+ErRE04LH34Etka2oVQhW6oXQ+Q8ZcDCVxiWp5vgbBH6XcH8BOo4w/Rhg==}
@@ -8236,6 +8267,10 @@ snapshots:
     dependencies:
       nanoid: 3.3.11
 
+  '@replit/revenuecat-sdk@4.2.0(typescript@5.9.3)':
+    dependencies:
+      typescript: 5.9.3
+
   '@replit/vite-plugin-cartographer@0.5.1':
     dependencies:
       '@babel/parser': 7.29.0
@@ -8249,6 +8284,14 @@ snapshots:
   '@replit/vite-plugin-runtime-error-modal@0.0.6':
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
+
+  '@revenuecat/purchases-js-hybrid-mappings@18.4.0':
+    dependencies:
+      '@revenuecat/purchases-js': 1.38.0
+
+  '@revenuecat/purchases-js@1.38.0': {}
+
+  '@revenuecat/purchases-typescript-internal@18.4.0': {}
 
   '@rolldown/pluginutils@1.0.0-rc.3': {}
 
@@ -11176,6 +11219,15 @@ snapshots:
       react-native: 0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0)
       react-native-is-edge-to-edge: 1.3.1(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
       react-native-reanimated: 4.1.7(react-native-worklets@0.5.1(@babel/core@7.29.0)(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
+
+  react-native-purchases@10.1.0(react-native-web@0.21.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0):
+    dependencies:
+      '@revenuecat/purchases-js-hybrid-mappings': 18.4.0
+      '@revenuecat/purchases-typescript-internal': 18.4.0
+      react: 19.1.0
+      react-native: 0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0)
+    optionalDependencies:
+      react-native-web: 0.21.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
 
   react-native-reanimated@4.1.7(react-native-worklets@0.5.1(@babel/core@7.29.0)(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0):
     dependencies:
