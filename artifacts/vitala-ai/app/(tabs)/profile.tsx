@@ -1,10 +1,20 @@
 import * as Haptics from "expo-haptics";
 import React, { useState } from "react";
-import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useColors } from "@/hooks/useColors";
 import { useUser } from "@/context/UserContext";
+import { useNotifications } from "@/hooks/useNotifications";
 import AchievementShareModal from "@/components/AchievementShareModal";
 
 interface Achievement {
@@ -28,17 +38,11 @@ const ACHIEVEMENTS: Achievement[] = [
 const DAYS = ["M", "T", "W", "T", "F", "S", "S"];
 const STREAK_ACTIVE = [true, true, true, true, true, true, false];
 
-const SETTINGS_ROWS = [
-  { icon: "notifications-outline" as const, label: "Notifications", sub: "Daily reminders" },
-  { icon: "moon-outline" as const, label: "Appearance", sub: "Dark mode" },
-  { icon: "shield-checkmark-outline" as const, label: "Pro Upgrade", sub: "Unlock unlimited sessions" },
-  { icon: "information-circle-outline" as const, label: "About", sub: "Version 1.0.0" },
-];
-
 export default function ProfileScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { user } = useUser();
+  const { enabled: notifEnabled, loading: notifLoading, toggle: toggleNotif } = useNotifications();
   const [selectedAchievement, setSelectedAchievement] = useState<Achievement | null>(null);
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const botPad = Platform.OS === "web" ? 34 : insets.bottom + 24;
@@ -193,28 +197,96 @@ export default function ProfileScreen() {
           Settings
         </Text>
         <View style={[styles.settingsList, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          {SETTINGS_ROWS.map((s, i) => (
-            <Pressable
-              key={s.label}
-              style={({ pressed }) => [
-                styles.settingRow,
-                i < SETTINGS_ROWS.length - 1 && { borderBottomWidth: 1, borderBottomColor: colors.border },
-                { opacity: pressed ? 0.7 : 1 },
-              ]}
-              onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
-            >
-              <Ionicons name={s.icon} size={20} color={colors.textSecondary} />
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.settingLabel, { color: colors.text, fontFamily: "Inter_500Medium" }]}>
-                  {s.label}
-                </Text>
-                <Text style={[styles.settingSub, { color: colors.textMuted, fontFamily: "Inter_400Regular" }]}>
-                  {s.sub}
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
-            </Pressable>
-          ))}
+          {/* Notifications — real toggle */}
+          <View style={[styles.settingRow, { borderBottomWidth: 1, borderBottomColor: colors.border }]}>
+            <View style={[styles.settingIconWrap, { backgroundColor: "#FF960022" }]}>
+              <Ionicons name="notifications-outline" size={18} color="#FF9600" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.settingLabel, { color: colors.text, fontFamily: "Inter_500Medium" }]}>
+                Daily Reminders
+              </Text>
+              <Text style={[styles.settingSub, { color: colors.textMuted, fontFamily: "Inter_400Regular" }]}>
+                {notifEnabled ? "Reminder set for 8:00 PM daily" : "Protect your streak with a nudge"}
+              </Text>
+            </View>
+            {notifLoading ? (
+              <ActivityIndicator size="small" color={colors.primary} />
+            ) : (
+              <Switch
+                value={notifEnabled}
+                onValueChange={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  toggleNotif();
+                }}
+                trackColor={{ false: colors.border, true: "#5C5EF055" }}
+                thumbColor={notifEnabled ? "#5C5EF0" : colors.textMuted}
+              />
+            )}
+          </View>
+
+          {/* Appearance */}
+          <Pressable
+            style={({ pressed }) => [
+              styles.settingRow,
+              { borderBottomWidth: 1, borderBottomColor: colors.border, opacity: pressed ? 0.7 : 1 },
+            ]}
+            onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
+          >
+            <View style={[styles.settingIconWrap, { backgroundColor: "#5C5EF022" }]}>
+              <Ionicons name="moon-outline" size={18} color="#5C5EF0" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.settingLabel, { color: colors.text, fontFamily: "Inter_500Medium" }]}>
+                Appearance
+              </Text>
+              <Text style={[styles.settingSub, { color: colors.textMuted, fontFamily: "Inter_400Regular" }]}>
+                Dark mode
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
+          </Pressable>
+
+          {/* Pro Upgrade */}
+          <Pressable
+            style={({ pressed }) => [
+              styles.settingRow,
+              { borderBottomWidth: 1, borderBottomColor: colors.border, opacity: pressed ? 0.7 : 1 },
+            ]}
+            onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
+          >
+            <View style={[styles.settingIconWrap, { backgroundColor: "#F59E0B22" }]}>
+              <Ionicons name="star-outline" size={18} color="#F59E0B" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.settingLabel, { color: colors.text, fontFamily: "Inter_500Medium" }]}>
+                Pro Upgrade
+              </Text>
+              <Text style={[styles.settingSub, { color: colors.textMuted, fontFamily: "Inter_400Regular" }]}>
+                Unlock unlimited sessions
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
+          </Pressable>
+
+          {/* About */}
+          <Pressable
+            style={({ pressed }) => [styles.settingRow, { opacity: pressed ? 0.7 : 1 }]}
+            onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
+          >
+            <View style={[styles.settingIconWrap, { backgroundColor: "#2DD4BF22" }]}>
+              <Ionicons name="information-circle-outline" size={18} color="#2DD4BF" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.settingLabel, { color: colors.text, fontFamily: "Inter_500Medium" }]}>
+                About
+              </Text>
+              <Text style={[styles.settingSub, { color: colors.textMuted, fontFamily: "Inter_400Regular" }]}>
+                Version 1.0.0
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
+          </Pressable>
         </View>
       </ScrollView>
 
@@ -336,6 +408,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   settingRow: { flexDirection: "row", alignItems: "center", gap: 12, padding: 16 },
+  settingIconWrap: { width: 34, height: 34, borderRadius: 10, alignItems: "center", justifyContent: "center" },
   settingLabel: { fontSize: 14 },
   settingSub: { fontSize: 12, marginTop: 2 },
 });
