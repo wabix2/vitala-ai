@@ -17,13 +17,13 @@ import {
 import { useSubscription } from "@/lib/revenuecat";
 import { useListGeminiConversations } from "@workspace/api-client-react";
 
-const QUICK_ACTIONS = [
-  { icon: "message-circle" as const, label: "AI Chat",     route: "/(tabs)/chat" as const,    color: "#7B7FFF" },
+const CORE_TOOLS = [
+  { icon: "message-circle" as const, label: "AI Chat",     route: "/(tabs)/chat" as const,     color: "#7B7FFF" },
   { icon: "layers" as const,         label: "Flashcards",  route: "/study/flashcards" as const, color: "#00D4AA" },
-  { icon: "check-circle" as const,   label: "Quiz",        route: "/study/quiz" as const,      color: "#F97316" },
-  { icon: "file-text" as const,      label: "PDF AI",      route: "/(tabs)/pdf" as const,      color: "#EC4899" },
-  { icon: "clock" as const,          label: "Focus Timer", route: "/timer" as const,            color: "#8B5CF6" },
-  { icon: "calendar" as const,       label: "Study Plan",  route: "/study-plan" as const,      color: "#14B8A6" },
+  { icon: "check-circle" as const,   label: "Quiz",        route: "/study/quiz" as const,       color: "#F97316" },
+  { icon: "file-text" as const,      label: "PDF AI",      route: "/(tabs)/pdf" as const,       color: "#EC4899" },
+  { icon: "clock" as const,          label: "Focus Timer", route: "/timer" as const,             color: "#8B5CF6" },
+  { icon: "calendar" as const,       label: "Study Plan",  route: "/study-plan" as const,       color: "#14B8A6" },
 ];
 
 const STUDY_TIPS = [
@@ -127,7 +127,6 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* XP Progress Bar */}
         <Pressable onPress={() => router.push("/achievements" as never)} style={styles.xpBarSection}>
           <View style={[styles.xpBarBg, { backgroundColor: isDark ? "#1E2A44" : "#DDE2F0" }]}>
             <View style={[styles.xpBarFill, { width: `${leagueProgress * 100}%`, backgroundColor: leagueColor }]} />
@@ -141,7 +140,8 @@ export default function HomeScreen() {
       </LinearGradient>
 
       <ScrollView style={styles.scroll} contentContainerStyle={[styles.scrollContent, { paddingBottom: 100 }]} showsVerticalScrollIndicator={false}>
-        {/* Daily Challenge Card */}
+
+        {/* Daily Challenge */}
         <Animated.View entering={FadeInDown.duration(400).delay(60)}>
           <Pressable
             onPress={() => router.push("/daily-challenge" as never)}
@@ -174,20 +174,43 @@ export default function HomeScreen() {
                 )}
               </View>
               <Text style={[styles.challengeQ, { color: colors.foreground }]} numberOfLines={2}>{todayQuestion.preview}</Text>
-              <View style={styles.challengeFooter}>
-                <Text style={[styles.challengeAction, { color: challengeDone ? "#00D4AA" : todayQuestion.color }]}>
-                  {challengeDone ? "View result & leaderboard →" : "Answer to keep your streak alive →"}
-                </Text>
-              </View>
+              <Text style={[styles.challengeAction, { color: challengeDone ? "#00D4AA" : todayQuestion.color }]}>
+                {challengeDone ? "View result & leaderboard →" : "Answer to keep your streak alive →"}
+              </Text>
             </LinearGradient>
           </Pressable>
         </Animated.View>
 
-        {/* Quick Actions */}
+        {/* Teach the AI — Featured */}
         <Animated.View entering={FadeInDown.duration(400).delay(120)}>
-          <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>Quick Actions</Text>
+          <Pressable onPress={() => router.push("/feynman" as never)}>
+            <LinearGradient
+              colors={["#7B3FFF", "#A855F7", "#6366F1"]}
+              style={styles.feynmanCard}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <View style={styles.feynmanLeft}>
+                <View style={styles.feynmanBadge}>
+                  <Text style={styles.feynmanBadgeText}>✨ NEW</Text>
+                </View>
+                <Text style={styles.feynmanTitle}>Teach the AI</Text>
+                <Text style={styles.feynmanDesc}>Explain a topic — get scored on how well you really know it</Text>
+                <View style={styles.feynmanCta}>
+                  <Text style={styles.feynmanCtaText}>Start teaching</Text>
+                  <Feather name="arrow-right" size={14} color="#fff" />
+                </View>
+              </View>
+              <Text style={styles.feynmanEmoji}>🧠</Text>
+            </LinearGradient>
+          </Pressable>
+        </Animated.View>
+
+        {/* Tools Grid */}
+        <Animated.View entering={FadeInDown.duration(400).delay(180)}>
+          <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>Tools</Text>
           <View style={styles.grid}>
-            {QUICK_ACTIONS.map((action) => (
+            {CORE_TOOLS.map((action) => (
               <Pressable key={action.label} onPress={() => router.push(action.route as never)} style={[styles.actionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                 <View style={[styles.actionIcon, { backgroundColor: `${action.color}18` }]}>
                   <Feather name={action.icon} size={22} color={action.color} />
@@ -199,7 +222,7 @@ export default function HomeScreen() {
         </Animated.View>
 
         {/* Stats */}
-        <Animated.View entering={FadeInDown.duration(400).delay(180)}>
+        <Animated.View entering={FadeInDown.duration(400).delay(240)}>
           <Pressable onPress={() => router.push("/progress" as never)}>
             <LinearGradient
               colors={isDark ? ["#1A2040", "#141E35"] : ["#EEF0FF", "#E8EBFF"]}
@@ -233,8 +256,8 @@ export default function HomeScreen() {
 
         {/* Pro Banner */}
         {!isSubscribed && (
-          <Animated.View entering={FadeInDown.duration(400).delay(240)}>
-            <Pressable style={[styles.proBanner, { backgroundColor: `${colors.primary}10`, borderColor: `${colors.primary}28` }]} onPress={() => router.push("/paywall")}>
+          <Animated.View entering={FadeInDown.duration(400).delay(300)}>
+            <Pressable style={[styles.proBanner, { backgroundColor: `${colors.primary}10`, borderColor: `${colors.primary}28` }]} onPress={() => router.push("/paywall" as never)}>
               <LinearGradient colors={["#7B7FFF20", "#00D4AA10"]} style={styles.proBannerInner} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
                 <View style={[styles.proBannerIcon, { backgroundColor: `${colors.primary}20` }]}>
                   <Feather name="zap" size={18} color={colors.primary} />
@@ -249,8 +272,8 @@ export default function HomeScreen() {
           </Animated.View>
         )}
 
-        {/* Tip */}
-        <Animated.View entering={FadeInDown.duration(400).delay(300)}>
+        {/* Today's Tip */}
+        <Animated.View entering={FadeInDown.duration(400).delay(360)}>
           <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>Today's Tip</Text>
           <View style={[styles.tipCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <Feather name="zap" size={18} color="#F97316" />
@@ -258,13 +281,13 @@ export default function HomeScreen() {
           </View>
         </Animated.View>
 
-        {/* Navigation shortcuts */}
-        <Animated.View entering={FadeInDown.duration(400).delay(360)}>
+        {/* More */}
+        <Animated.View entering={FadeInDown.duration(400).delay(420)}>
           <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>More</Text>
           {[
-            { icon: "award" as const,     label: "Achievements",    desc: `${earnedAchievements.length} badges earned`,              color: "#F59E0B", route: "/achievements" as const },
-            { icon: "trending-up" as const,label: "My Progress",    desc: "Streaks, sessions & analytics",                           color: "#00D4AA", route: "/progress" as const },
-            { icon: "users" as const,      label: "Leaderboard",    desc: "See how your streak ranks globally",                       color: "#7B7FFF", route: "/leaderboard" as const },
+            { icon: "award" as const,      label: "Achievements", desc: `${earnedAchievements.length} badges earned`,     color: "#F59E0B", route: "/achievements" as const },
+            { icon: "trending-up" as const, label: "My Progress",  desc: "Streaks, sessions & analytics",                  color: "#00D4AA", route: "/progress" as const },
+            { icon: "users" as const,       label: "Leaderboard",  desc: "See how your streak ranks globally",              color: "#7B7FFF", route: "/leaderboard" as const },
           ].map((item) => (
             <Pressable key={item.label} onPress={() => router.push(item.route as never)} style={[styles.toolRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <View style={[styles.toolIcon, { backgroundColor: `${item.color}18` }]}>
@@ -278,6 +301,7 @@ export default function HomeScreen() {
             </Pressable>
           ))}
         </Animated.View>
+
       </ScrollView>
     </View>
   );
@@ -315,8 +339,16 @@ const styles = StyleSheet.create({
   newBadge: { borderRadius: 6, paddingHorizontal: 7, paddingVertical: 3 },
   newBadgeText: { color: "#fff", fontSize: 10, fontFamily: "Inter_700Bold" },
   challengeQ: { fontSize: 17, fontFamily: "Inter_700Bold", lineHeight: 24, letterSpacing: -0.2 },
-  challengeFooter: {},
   challengeAction: { fontSize: 13, fontFamily: "Inter_500Medium" },
+  feynmanCard: { borderRadius: 24, padding: 22, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
+  feynmanLeft: { flex: 1, gap: 6 },
+  feynmanBadge: { alignSelf: "flex-start", backgroundColor: "rgba(255,255,255,0.2)", borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 },
+  feynmanBadgeText: { color: "#fff", fontSize: 10, fontFamily: "Inter_700Bold", letterSpacing: 0.5 },
+  feynmanTitle: { color: "#fff", fontSize: 22, fontFamily: "Inter_700Bold", letterSpacing: -0.3 },
+  feynmanDesc: { color: "rgba(255,255,255,0.8)", fontSize: 13, fontFamily: "Inter_400Regular", lineHeight: 19 },
+  feynmanCta: { flexDirection: "row", alignItems: "center", gap: 5, marginTop: 4 },
+  feynmanCtaText: { color: "#fff", fontSize: 13, fontFamily: "Inter_600SemiBold" },
+  feynmanEmoji: { fontSize: 56 },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
   actionCard: { width: "47%", borderRadius: 16, borderWidth: 1, padding: 14, alignItems: "flex-start", gap: 8 },
   actionIcon: { width: 40, height: 40, borderRadius: 10, alignItems: "center", justifyContent: "center" },
