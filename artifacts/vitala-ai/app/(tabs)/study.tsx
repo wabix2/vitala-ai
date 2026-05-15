@@ -7,6 +7,7 @@ import { useColors } from "@/hooks/useColors";
 import { useUser } from "@/context/UserContext";
 import QuizModal from "@/components/QuizModal";
 import FlashcardModal from "@/components/FlashcardModal";
+import { shadows } from "@/constants/theme";
 
 const SUBJECTS = ["All", "Biology", "Math", "Chemistry", "Physics", "History"];
 
@@ -16,7 +17,7 @@ const MODES = [
     icon: "help-circle" as const,
     label: "Quiz",
     desc: "Multiple-choice questions with instant feedback and XP rewards",
-    color: "#5C5EF0",
+    color: "#1D72E8",
     xpLabel: "+5 XP / correct answer",
   },
   {
@@ -24,7 +25,7 @@ const MODES = [
     icon: "layers" as const,
     label: "Flashcards",
     desc: "Flip cards with spaced repetition for long-term memorization",
-    color: "#2DD4BF",
+    color: "#0EA5E9",
     xpLabel: "+25 XP / deck",
   },
 ];
@@ -55,9 +56,9 @@ export default function StudyScreen() {
         {/* Header */}
         <View style={[styles.header, { paddingTop: topPad + 16 }]}>
           <Text style={[styles.headerTitle, { color: colors.text, fontFamily: "Inter_700Bold" }]}>Study</Text>
-          <View style={[styles.streakPill, { backgroundColor: "#FF960022" }]}>
-            <Ionicons name="flame" size={14} color="#FF9600" />
-            <Text style={[styles.streakTxt, { color: "#FF9600", fontFamily: "Inter_600SemiBold" }]}>
+          <View style={[styles.streakPill, { backgroundColor: "#FFF7ED" }]}>
+            <Ionicons name="flame" size={14} color="#F97316" />
+            <Text style={[styles.streakTxt, { color: "#F97316", fontFamily: "Inter_600SemiBold" }]}>
               {user.streak}d streak
             </Text>
           </View>
@@ -102,6 +103,7 @@ export default function StudyScreen() {
               style={({ pressed }) => [
                 styles.modeCard,
                 { backgroundColor: colors.card, borderColor: colors.border, opacity: pressed ? 0.85 : 1 },
+                shadows.sm,
               ]}
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -109,7 +111,7 @@ export default function StudyScreen() {
                 else if (m.id === "flashcard") setFlashVisible(true);
               }}
             >
-              <View style={[styles.modeIconWrap, { backgroundColor: m.color + "22" }]}>
+              <View style={[styles.modeIconWrap, { backgroundColor: m.color + "15" }]}>
                 <Ionicons name={m.icon} size={28} color={m.color} />
               </View>
               <Text style={[styles.modeLabel, { color: colors.text, fontFamily: "Inter_700Bold" }]}>
@@ -118,7 +120,7 @@ export default function StudyScreen() {
               <Text style={[styles.modeDesc, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
                 {m.desc}
               </Text>
-              <View style={[styles.xpPill, { backgroundColor: m.color + "22" }]}>
+              <View style={[styles.xpPill, { backgroundColor: m.color + "15" }]}>
                 <Text style={[styles.xpPillTxt, { color: m.color, fontFamily: "Inter_600SemiBold" }]}>
                   {m.xpLabel}
                 </Text>
@@ -139,9 +141,9 @@ export default function StudyScreen() {
           {RECENT.map((r, i) => (
             <View
               key={i}
-              style={[styles.recentRow, { backgroundColor: colors.card, borderColor: colors.border }]}
+              style={[styles.recentRow, { backgroundColor: colors.card, borderColor: colors.border }, shadows.sm]}
             >
-              <View style={[styles.recentIcon, { backgroundColor: colors.primary + "22" }]}>
+              <View style={[styles.recentIcon, { backgroundColor: colors.primary + "15" }]}>
                 <Ionicons name={r.icon} size={18} color={colors.primary} />
               </View>
               <View style={{ flex: 1 }}>

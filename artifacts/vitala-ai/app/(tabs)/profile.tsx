@@ -1,7 +1,6 @@
 import * as Haptics from "expo-haptics";
 import React, { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   Alert,
   Platform,
   Pressable,
@@ -20,7 +19,8 @@ import AchievementShareModal from "@/components/AchievementShareModal";
 import { Avatar } from "@/components/ui/Avatar";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { shadows } from "@/constants/theme";
-import { isPremiumUser, purchasePremium, restorePurchases } from "@/utils/premium";
+import { isPremiumUser } from "@/utils/premium";
+import PremiumPaywallModal from "@/components/PremiumPaywallModal";
 
 interface Achievement {
   id: string;
@@ -50,7 +50,7 @@ export default function ProfileScreen() {
   const { enabled: notifEnabled, loading: notifLoading, toggle: toggleNotif } = useNotifications();
   const [selectedAchievement, setSelectedAchievement] = useState<Achievement | null>(null);
   const [isPremium, setIsPremium] = useState(false);
-  const [purchaseLoading, setPurchaseLoading] = useState(false);
+  const [paywallVisible, setPaywallVisible] = useState(false);
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const botPad = Platform.OS === "web" ? 34 : insets.bottom + 24;
   const xpFraction = Math.min(1, user.xp / user.xpToNext);
@@ -61,40 +61,9 @@ export default function ProfileScreen() {
     }
   }, []);
 
-  const handleUpgrade = async () => {
-    if (Platform.OS === "web") {
-      Alert.alert("Premium", "Premium upgrade is available on iOS and Android only.");
-      return;
-    }
+  const handleUpgrade = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setPurchaseLoading(true);
-    try {
-      const success = await purchasePremium();
-      if (success) {
-        setIsPremium(true);
-        Alert.alert("Welcome to Premium!", "You now have unlimited access to all features.");
-      }
-    } catch {
-      Alert.alert("Purchase failed", "Please try again or restore your purchases.");
-    } finally {
-      setPurchaseLoading(false);
-    }
-  };
-
-  const handleRestore = async () => {
-    setPurchaseLoading(true);
-    try {
-      const restored = await restorePurchases();
-      setIsPremium(restored);
-      Alert.alert(
-        restored ? "Purchases Restored" : "Nothing to Restore",
-        restored ? "Your premium access has been restored." : "No previous purchases found."
-      );
-    } catch {
-      Alert.alert("Restore failed", "Please try again.");
-    } finally {
-      setPurchaseLoading(false);
-    }
+    setPaywallVisible(true);
   };
 
   return (
@@ -182,13 +151,8 @@ export default function ProfileScreen() {
             <Pressable
               style={({ pressed }) => [styles.upgradeBtn, pressed && styles.upgradeBtnPressed]}
               onPress={handleUpgrade}
-              disabled={purchaseLoading}
             >
-              {purchaseLoading ? (
-                <ActivityIndicator size="small" color="#1D72E8" />
-              ) : (
-                <Text style={[styles.upgradeBtnTxt, { fontFamily: "Inter_700Bold" }]}>Upgrade</Text>
-              )}
+              <Text style={[styles.upgradeBtnTxt, { fontFamily: "Inter_700Bold" }]}>See Plans</Text>
             </Pressable>
           </View>
         )}
@@ -357,7 +321,7 @@ export default function ProfileScreen() {
                 styles.settingRow,
                 { borderBottomWidth: 1, borderBottomColor: colors.border, opacity: pressed ? 0.7 : 1 },
               ]}
-              onPress={handleRestore}
+              onPress={() => setPaywallVisible(true)}
             >
               <View style={[styles.settingIconWrap, { backgroundColor: "#F0FDF4" }]}>
                 <Ionicons name="refresh-outline" size={18} color="#10B981" />
@@ -400,6 +364,11 @@ export default function ProfileScreen() {
         userName={user.userName}
         userLevel={user.level}
         onClose={() => setSelectedAchievement(null)}
+      />
+      <PremiumPaywallModal
+        visible={paywallVisible}
+        onClose={() => setPaywallVisible(false)}
+        onPurchaseSuccess={() => setIsPremium(true)}
       />
     </>
   );
