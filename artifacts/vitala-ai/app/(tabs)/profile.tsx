@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import { useColors } from "@/hooks/useColors";
 import { useUser } from "@/context/UserContext";
 import { useNotifications } from "@/hooks/useNotifications";
@@ -337,6 +338,31 @@ export default function ProfileScreen() {
               <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
             </Pressable>
           )}
+
+          {/* Privacy Policy */}
+          <Pressable
+            style={({ pressed }) => [
+              styles.settingRow,
+              { borderBottomWidth: 1, borderBottomColor: colors.border, opacity: pressed ? 0.7 : 1 },
+            ]}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              router.push("/privacy-policy");
+            }}
+          >
+            <View style={[styles.settingIconWrap, { backgroundColor: "#F5F3FF" }]}>
+              <Ionicons name="shield-checkmark-outline" size={18} color="#7C3AED" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.settingLabel, { color: colors.text, fontFamily: "Inter_500Medium" }]}>
+                Privacy Policy
+              </Text>
+              <Text style={[styles.settingSub, { color: colors.textMuted, fontFamily: "Inter_400Regular" }]}>
+                How we handle your data
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
+          </Pressable>
 
           {/* About */}
           <Pressable
