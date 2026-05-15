@@ -158,3 +158,14 @@ overrides:
   # drizzle-kit uses esbuild internally on an older version that's vulnerable, this overrides it
   "@esbuild-kit/esm-loader": "npm:tsx@^4.21.0"
   esbuild: "0.27.3"
+  # Force Metro to 0.81.x for Expo SDK 52 compatibility
+  metro: "0.81.0"
+  metro-cache: "0.81.0"
+  metro-config: "0.81.0"
+  metro-core: "0.81.0"
+  metro-file-map: "0.81.0"
+  metro-resolver: "0.81.0"
+  metro-runtime: "0.81.0"
+  metro-source-map: "0.81.0"
+  metro-transform-plugins: "0.81.0"
+  metro-transform-worker: "0.81.0"

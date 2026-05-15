@@ -1,42 +1,42 @@
 const vitala = {
-  text: "#F9FAFB",
-  tint: "#5C5EF0",
+  text: "#111827",
+  tint: "#1D72E8",
 
-  background: "#111827",
-  foreground: "#F9FAFB",
+  background: "#F8FAFC",
+  foreground: "#111827",
 
-  card: "#1F2937",
-  cardForeground: "#F9FAFB",
-  cardBorder: "#374151",
+  card: "#FFFFFF",
+  cardForeground: "#111827",
+  cardBorder: "#E2E8F0",
 
-  primary: "#5C5EF0",
+  primary: "#1D72E8",
   primaryForeground: "#FFFFFF",
 
-  secondary: "#2DD4BF",
-  secondaryForeground: "#111827",
+  secondary: "#0EA5E9",
+  secondaryForeground: "#FFFFFF",
 
-  muted: "#1F2937",
-  mutedForeground: "#6B7280",
+  muted: "#F1F5F9",
+  mutedForeground: "#64748B",
 
   accent: "#F59E0B",
   accentForeground: "#111827",
 
-  destructive: "#F87171",
+  destructive: "#EF4444",
   destructiveForeground: "#FFFFFF",
 
-  border: "#374151",
-  input: "#1F2937",
+  border: "#E2E8F0",
+  input: "#FFFFFF",
 
-  textSecondary: "#9CA3AF",
-  textMuted: "#6B7280",
-  streak: "#FF9600",
-  success: "#00C899",
+  textSecondary: "#64748B",
+  textMuted: "#94A3B8",
+  streak: "#F97316",
+  success: "#10B981",
 };
 
 const colors = {
   light: vitala,
   dark: vitala,
-  radius: 16,
+  radius: 14,
 };
 
 export default colors;

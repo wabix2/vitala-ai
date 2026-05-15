@@ -150,29 +150,29 @@ export default function QuizModal({ visible, subject, onClose }: Props) {
 
   const optionBg = (idx: number) => {
     if (selected === null) return colors.card;
-    if (idx === q.answer) return "#00C89922";
-    if (idx === selected && idx !== q.answer) return "#F8717122";
+    if (idx === q.answer) return "#DCFCE7";
+    if (idx === selected && idx !== q.answer) return "#FEF2F2";
     return colors.card;
   };
   const optionBorder = (idx: number) => {
     if (selected === null) return colors.border;
-    if (idx === q.answer) return "#00C899";
-    if (idx === selected && idx !== q.answer) return "#F87171";
+    if (idx === q.answer) return "#10B981";
+    if (idx === selected && idx !== q.answer) return "#EF4444";
     return colors.border;
   };
   const optionTextColor = (idx: number) => {
     if (selected === null) return colors.text;
-    if (idx === q.answer) return "#00C899";
-    if (idx === selected && idx !== q.answer) return "#F87171";
+    if (idx === q.answer) return "#059669";
+    if (idx === selected && idx !== q.answer) return "#DC2626";
     return colors.textMuted;
   };
 
   const grade = (s: number) => {
     const pct = s / questions.length;
-    if (pct >= 0.9) return { label: "Excellent! 🏆", color: "#F59E0B" };
-    if (pct >= 0.7) return { label: "Great job! ⭐", color: "#5C5EF0" };
-    if (pct >= 0.5) return { label: "Good effort! 💪", color: "#2DD4BF" };
-    return { label: "Keep studying! 📚", color: "#9CA3AF" };
+    if (pct >= 0.9) return { label: "Excellent!", color: "#F59E0B" };
+    if (pct >= 0.7) return { label: "Great job!", color: "#1D72E8" };
+    if (pct >= 0.5) return { label: "Good effort!", color: "#0EA5E9" };
+    return { label: "Keep studying!", color: "#94A3B8" };
   };
 
   const finalScore = done ? score : 0;
@@ -195,7 +195,7 @@ export default function QuizModal({ visible, subject, onClose }: Props) {
                   Question {current + 1} of {questions.length}
                 </Text>
               </View>
-              <View style={[styles.scorePill, { backgroundColor: "#F59E0B22" }]}>
+              <View style={[styles.scorePill, { backgroundColor: "#FFFBEB" }]}>
                 <Ionicons name="star" size={13} color="#F59E0B" />
                 <Text style={[styles.scoreNum, { color: "#F59E0B", fontFamily: "Inter_700Bold" }]}>
                   {score}
@@ -203,7 +203,7 @@ export default function QuizModal({ visible, subject, onClose }: Props) {
               </View>
             </View>
 
-            <View style={[styles.progressTrack, { backgroundColor: colors.card }]}>
+            <View style={[styles.progressTrack, { backgroundColor: colors.muted }]}>
               <View style={[styles.progressFill, { width: `${progress * 100}%`, backgroundColor: colors.primary }]} />
             </View>
 
@@ -233,10 +233,10 @@ export default function QuizModal({ visible, subject, onClose }: Props) {
                         {opt}
                       </Text>
                       {selected !== null && idx === q.answer && (
-                        <Ionicons name="checkmark-circle" size={20} color="#00C899" />
+                        <Ionicons name="checkmark-circle" size={20} color="#10B981" />
                       )}
                       {selected === idx && idx !== q.answer && (
-                        <Ionicons name="close-circle" size={20} color="#F87171" />
+                        <Ionicons name="close-circle" size={20} color="#EF4444" />
                       )}
                     </Pressable>
                   ))}
@@ -246,7 +246,7 @@ export default function QuizModal({ visible, subject, onClose }: Props) {
           </>
         ) : (
           <ScrollView contentContainerStyle={styles.results} showsVerticalScrollIndicator={false}>
-            <View style={[styles.resultIcon, { backgroundColor: g.color + "22" }]}>
+            <View style={[styles.resultIcon, { backgroundColor: g.color + "15" }]}>
               <Ionicons name="trophy" size={48} color={g.color} />
             </View>
             <Text style={[styles.gradeLabel, { color: g.color, fontFamily: "Inter_700Bold" }]}>
@@ -259,7 +259,7 @@ export default function QuizModal({ visible, subject, onClose }: Props) {
               correct answers
             </Text>
             <View style={styles.resultStats}>
-              <View style={[styles.resultStat, { backgroundColor: "#F59E0B22", borderColor: "#F59E0B55" }]}>
+              <View style={[styles.resultStat, { backgroundColor: "#FFFBEB", borderColor: "#FDE68A" }]}>
                 <Ionicons name="star" size={20} color="#F59E0B" />
                 <Text style={[styles.resultStatVal, { color: "#F59E0B", fontFamily: "Inter_700Bold" }]}>
                   +{totalXP} XP
@@ -268,9 +268,9 @@ export default function QuizModal({ visible, subject, onClose }: Props) {
                   earned
                 </Text>
               </View>
-              <View style={[styles.resultStat, { backgroundColor: "#5C5EF022", borderColor: "#5C5EF055" }]}>
-                <Ionicons name="help-circle" size={20} color="#5C5EF0" />
-                <Text style={[styles.resultStatVal, { color: "#5C5EF0", fontFamily: "Inter_700Bold" }]}>
+              <View style={[styles.resultStat, { backgroundColor: colors.primary + "10", borderColor: colors.primary + "30" }]}>
+                <Ionicons name="help-circle" size={20} color={colors.primary} />
+                <Text style={[styles.resultStatVal, { color: colors.primary, fontFamily: "Inter_700Bold" }]}>
                   {Math.round((finalScore / questions.length) * 100)}%
                 </Text>
                 <Text style={[styles.resultStatLabel, { color: colors.textMuted, fontFamily: "Inter_400Regular" }]}>

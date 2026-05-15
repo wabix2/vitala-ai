@@ -6,12 +6,12 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "vitala-ai",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/images/icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#0A0A0F"
+      "backgroundColor": "#FFFFFF"
     },
     "ios": {
       "supportsTablet": false,
@@ -26,7 +26,7 @@
       "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/icon.png",
-        "backgroundColor": "#0A0A0F"
+        "backgroundColor": "#FFFFFF"
       }
     },
     "web": {
@@ -45,14 +45,19 @@
         "expo-notifications",
         {
           "icon": "./assets/images/icon.png",
-          "color": "#5C5EF0",
+          "color": "#1D72E8",
           "defaultChannel": "streak-reminder"
+        }
+      ],
+      [
+        "react-native-purchases",
+        {
+          "androidApiKey": "YOUR_GOOGLE_PLAY_API_KEY_PLACEHOLDER"
         }
       ]
     ],
     "experiments": {
-      "typedRoutes": true,
-      "reactCompiler": true
+      "typedRoutes": true
     }
   }
 }
