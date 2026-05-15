@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useColors } from "@/hooks/useColors";
 import { useUser } from "@/context/UserContext";
+import QuizModal from "@/components/QuizModal";
 
 const SUBJECTS = ["All", "Biology", "Math", "Chemistry", "Physics", "History"];
 
@@ -15,7 +16,7 @@ const MODES = [
     label: "Quiz",
     desc: "Multiple-choice questions with instant feedback and XP rewards",
     color: "#5C5EF0",
-    xpLabel: "+50 XP / quiz",
+    xpLabel: "+5 XP / correct answer",
   },
   {
     id: "flashcard",
@@ -28,139 +29,148 @@ const MODES = [
 ];
 
 const RECENT = [
-  { subject: "Biology", mode: "Quiz", score: "8 / 10", xp: "+50 XP", date: "Today", icon: "help-circle" as const },
+  { subject: "Biology", mode: "Quiz", score: "8 / 10", xp: "+40 XP", date: "Today", icon: "help-circle" as const },
   { subject: "Chemistry", mode: "Flashcards", score: "24 cards", xp: "+25 XP", date: "Yesterday", icon: "layers" as const },
-  { subject: "Math", mode: "Quiz", score: "9 / 10", xp: "+50 XP", date: "Mon", icon: "help-circle" as const },
+  { subject: "Math", mode: "Quiz", score: "9 / 10", xp: "+45 XP", date: "Mon", icon: "help-circle" as const },
 ];
 
 export default function StudyScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { user, incrementQuizzes } = useUser();
+  const { user } = useUser();
   const [subject, setSubject] = useState("All");
+  const [quizVisible, setQuizVisible] = useState(false);
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const botPad = Platform.OS === "web" ? 34 : insets.bottom + 24;
 
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: colors.background }}
-      contentContainerStyle={{ paddingBottom: botPad }}
-      showsVerticalScrollIndicator={false}
-    >
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: topPad + 16 }]}>
-        <Text style={[styles.headerTitle, { color: colors.text, fontFamily: "Inter_700Bold" }]}>Study</Text>
-        <View style={[styles.streakPill, { backgroundColor: "#FF960022" }]}>
-          <Ionicons name="flame" size={14} color="#FF9600" />
-          <Text style={[styles.streakTxt, { color: "#FF9600", fontFamily: "Inter_600SemiBold" }]}>
-            {user.streak} day streak
-          </Text>
-        </View>
-      </View>
-
-      {/* Subject Chips */}
+    <>
       <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.chipsRow}
-        style={{ marginBottom: 24 }}
+        style={{ flex: 1, backgroundColor: colors.background }}
+        contentContainerStyle={{ paddingBottom: botPad }}
+        showsVerticalScrollIndicator={false}
       >
-        {SUBJECTS.map((s) => (
-          <Pressable
-            key={s}
-            onPress={() => setSubject(s)}
-            style={[
-              styles.chip,
-              {
-                backgroundColor: subject === s ? colors.primary : colors.card,
-                borderColor: subject === s ? colors.primary : colors.border,
-              },
-            ]}
-          >
-            <Text
+        {/* Header */}
+        <View style={[styles.header, { paddingTop: topPad + 16 }]}>
+          <Text style={[styles.headerTitle, { color: colors.text, fontFamily: "Inter_700Bold" }]}>Study</Text>
+          <View style={[styles.streakPill, { backgroundColor: "#FF960022" }]}>
+            <Ionicons name="flame" size={14} color="#FF9600" />
+            <Text style={[styles.streakTxt, { color: "#FF9600", fontFamily: "Inter_600SemiBold" }]}>
+              {user.streak} day streak
+            </Text>
+          </View>
+        </View>
+
+        {/* Subject Chips */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.chipsRow}
+          style={{ marginBottom: 24 }}
+        >
+          {SUBJECTS.map((s) => (
+            <Pressable
+              key={s}
+              onPress={() => setSubject(s)}
               style={[
-                styles.chipTxt,
+                styles.chip,
                 {
-                  color: subject === s ? "#fff" : colors.textSecondary,
-                  fontFamily: "Inter_500Medium",
+                  backgroundColor: subject === s ? colors.primary : colors.card,
+                  borderColor: subject === s ? colors.primary : colors.border,
                 },
               ]}
             >
-              {s}
-            </Text>
-          </Pressable>
-        ))}
+              <Text
+                style={[
+                  styles.chipTxt,
+                  {
+                    color: subject === s ? "#fff" : colors.textSecondary,
+                    fontFamily: "Inter_500Medium",
+                  },
+                ]}
+              >
+                {s}
+              </Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+
+        {/* Mode Cards */}
+        <View style={styles.modesRow}>
+          {MODES.map((m) => (
+            <Pressable
+              key={m.id}
+              style={({ pressed }) => [
+                styles.modeCard,
+                { backgroundColor: colors.card, borderColor: colors.border, opacity: pressed ? 0.85 : 1 },
+              ]}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                if (m.id === "quiz") setQuizVisible(true);
+              }}
+            >
+              <View style={[styles.modeIconWrap, { backgroundColor: m.color + "22" }]}>
+                <Ionicons name={m.icon} size={28} color={m.color} />
+              </View>
+              <Text style={[styles.modeLabel, { color: colors.text, fontFamily: "Inter_700Bold" }]}>
+                {m.label}
+              </Text>
+              <Text style={[styles.modeDesc, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                {m.desc}
+              </Text>
+              <View style={[styles.xpPill, { backgroundColor: m.color + "22" }]}>
+                <Text style={[styles.xpPillTxt, { color: m.color, fontFamily: "Inter_600SemiBold" }]}>
+                  {m.xpLabel}
+                </Text>
+              </View>
+              <View style={[styles.startBtn, { backgroundColor: m.color }]}>
+                <Text style={[styles.startTxt, { fontFamily: "Inter_700Bold" }]}>Start</Text>
+                <Ionicons name="arrow-forward" size={16} color="#fff" />
+              </View>
+            </Pressable>
+          ))}
+        </View>
+
+        {/* Recent Sessions */}
+        <Text style={[styles.sectionTitle, { color: colors.text, fontFamily: "Inter_700Bold" }]}>
+          Recent Sessions
+        </Text>
+        <View style={styles.recentList}>
+          {RECENT.map((r, i) => (
+            <View
+              key={i}
+              style={[styles.recentRow, { backgroundColor: colors.card, borderColor: colors.border }]}
+            >
+              <View style={[styles.recentIcon, { backgroundColor: colors.primary + "22" }]}>
+                <Ionicons name={r.icon} size={18} color={colors.primary} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.recentSubject, { color: colors.text, fontFamily: "Inter_600SemiBold" }]}>
+                  {r.subject}
+                </Text>
+                <Text style={[styles.recentMeta, { color: colors.textMuted, fontFamily: "Inter_400Regular" }]}>
+                  {r.mode} · {r.date}
+                </Text>
+              </View>
+              <View style={{ alignItems: "flex-end" }}>
+                <Text style={[styles.recentScore, { color: colors.text, fontFamily: "Inter_600SemiBold" }]}>
+                  {r.score}
+                </Text>
+                <Text style={[styles.recentXP, { color: "#F59E0B", fontFamily: "Inter_500Medium" }]}>
+                  {r.xp}
+                </Text>
+              </View>
+            </View>
+          ))}
+        </View>
       </ScrollView>
 
-      {/* Mode Cards */}
-      <View style={styles.modesRow}>
-        {MODES.map((m) => (
-          <Pressable
-            key={m.id}
-            style={({ pressed }) => [
-              styles.modeCard,
-              { backgroundColor: colors.card, borderColor: colors.border, opacity: pressed ? 0.85 : 1 },
-            ]}
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-              if (m.id === "quiz") incrementQuizzes();
-            }}
-          >
-            <View style={[styles.modeIconWrap, { backgroundColor: m.color + "22" }]}>
-              <Ionicons name={m.icon} size={28} color={m.color} />
-            </View>
-            <Text style={[styles.modeLabel, { color: colors.text, fontFamily: "Inter_700Bold" }]}>
-              {m.label}
-            </Text>
-            <Text style={[styles.modeDesc, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
-              {m.desc}
-            </Text>
-            <View style={[styles.xpPill, { backgroundColor: m.color + "22" }]}>
-              <Text style={[styles.xpPillTxt, { color: m.color, fontFamily: "Inter_600SemiBold" }]}>
-                {m.xpLabel}
-              </Text>
-            </View>
-            <View style={[styles.startBtn, { backgroundColor: m.color }]}>
-              <Text style={[styles.startTxt, { fontFamily: "Inter_700Bold" }]}>Start</Text>
-              <Ionicons name="arrow-forward" size={16} color="#fff" />
-            </View>
-          </Pressable>
-        ))}
-      </View>
-
-      {/* Recent Sessions */}
-      <Text style={[styles.sectionTitle, { color: colors.text, fontFamily: "Inter_700Bold" }]}>
-        Recent Sessions
-      </Text>
-      <View style={styles.recentList}>
-        {RECENT.map((r, i) => (
-          <View
-            key={i}
-            style={[styles.recentRow, { backgroundColor: colors.card, borderColor: colors.border }]}
-          >
-            <View style={[styles.recentIcon, { backgroundColor: colors.primary + "22" }]}>
-              <Ionicons name={r.icon} size={18} color={colors.primary} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.recentSubject, { color: colors.text, fontFamily: "Inter_600SemiBold" }]}>
-                {r.subject}
-              </Text>
-              <Text style={[styles.recentMeta, { color: colors.textMuted, fontFamily: "Inter_400Regular" }]}>
-                {r.mode} · {r.date}
-              </Text>
-            </View>
-            <View style={{ alignItems: "flex-end" }}>
-              <Text style={[styles.recentScore, { color: colors.text, fontFamily: "Inter_600SemiBold" }]}>
-                {r.score}
-              </Text>
-              <Text style={[styles.recentXP, { color: "#F59E0B", fontFamily: "Inter_500Medium" }]}>
-                {r.xp}
-              </Text>
-            </View>
-          </View>
-        ))}
-      </View>
-    </ScrollView>
+      <QuizModal
+        visible={quizVisible}
+        subject={subject}
+        onClose={() => setQuizVisible(false)}
+      />
+    </>
   );
 }
 
