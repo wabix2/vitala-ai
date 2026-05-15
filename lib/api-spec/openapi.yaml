@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: leaderboard
+    description: Leaderboard operations
 paths:
   /healthz:
     get:
@@ -24,6 +26,43 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /leaderboard:
+    get:
+      operationId: getLeaderboard
+      tags: [leaderboard]
+      summary: Get leaderboard
+      description: Returns top players ordered by XP
+      responses:
+        "200":
+          description: List of top players
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LeaderboardEntry"
+
+  /leaderboard/sync:
+    post:
+      operationId: syncPlayer
+      tags: [leaderboard]
+      summary: Sync player stats
+      description: Upserts the current user's stats into the leaderboard
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlayerInput"
+      responses:
+        "200":
+          description: Synced player entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeaderboardEntry"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +73,36 @@ components:
       required:
         - status
 
+    LeaderboardEntry:
+      type: object
+      required: [id, name, xp, level, streak, totalQuizzes, rank]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        xp:
+          type: integer
+        level:
+          type: integer
+        streak:
+          type: integer
+        totalQuizzes:
+          type: integer
+        rank:
+          type: integer
+
+    PlayerInput:
+      type: object
+      required: [name, xp, level, streak, totalQuizzes]
+      properties:
+        name:
+          type: string
+        xp:
+          type: integer
+        level:
+          type: integer
+        streak:
+          type: integer
+        totalQuizzes:
+          type: integer

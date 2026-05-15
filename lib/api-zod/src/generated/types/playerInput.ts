@@ -6,6 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export * from './healthStatus';
-export * from './leaderboardEntry';
-export * from './playerInput';
+export interface PlayerInput {
+  name: string;
+  xp: number;
+  level: number;
+  streak: number;
+  totalQuizzes: number;
+}

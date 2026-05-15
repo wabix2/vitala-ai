@@ -5,9 +5,6 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-export interface HealthStatus {
-  status: string;
-}
 
 export interface LeaderboardEntry {
   id: number;
@@ -18,12 +15,3 @@ export interface LeaderboardEntry {
   totalQuizzes: number;
   rank: number;
 }
-
-export interface PlayerInput {
-  name: string;
-  xp: number;
-  level: number;
-  streak: number;
-  totalQuizzes: number;
-}
-
