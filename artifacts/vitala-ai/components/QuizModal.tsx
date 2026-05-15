@@ -42,7 +42,7 @@ const QUESTION_BANK: Record<string, Question[]> = {
     { q: "What is 2¹⁰?", options: ["512", "2048", "1024", "256"], answer: 2 },
     { q: "Sum of angles in a triangle?", options: ["90°", "270°", "360°", "180°"], answer: 3 },
     { q: "What is log₁₀(1000)?", options: ["2", "4", "3", "10"], answer: 2 },
-    { q: "What is a prime number?", options: ["Divisible by 2", "Divisible only by 1 and itself", "An even number", "Greater than 100"], answer: 1 },
+    { q: "What is a prime number?", options: ["Divisible by 2", "Only by 1 and itself", "An even number", "Greater than 100"], answer: 1 },
   ],
   Chemistry: [
     { q: "Chemical symbol for water?", options: ["HO", "H₂O₂", "H₂O", "OH"], answer: 2 },
@@ -65,24 +65,22 @@ const QUESTION_BANK: Record<string, Question[]> = {
     { q: "Unit of electric resistance?", options: ["Volt", "Ampere", "Watt", "Ohm"], answer: 3 },
     { q: "Ohm's Law states?", options: ["P = VI", "V = IR", "F = ma", "E = mc²"], answer: 1 },
     { q: "Unit of power?", options: ["Newton", "Joule", "Watt", "Pascal"], answer: 2 },
-    { q: "What is the unit of electric charge?", options: ["Volt", "Ampere", "Coulomb", "Farad"], answer: 2 },
-    { q: "What phenomenon explains why the sky is blue?", options: ["Reflection", "Refraction", "Rayleigh scattering", "Diffraction"], answer: 2 },
+    { q: "Unit of electric charge?", options: ["Volt", "Ampere", "Coulomb", "Farad"], answer: 2 },
+    { q: "Why is the sky blue?", options: ["Reflection", "Refraction", "Rayleigh scattering", "Diffraction"], answer: 2 },
   ],
   History: [
     { q: "When did World War II end?", options: ["1943", "1944", "1946", "1945"], answer: 3 },
-    { q: "Who was the first President of the United States?", options: ["Thomas Jefferson", "Abraham Lincoln", "George Washington", "John Adams"], answer: 2 },
+    { q: "First President of the United States?", options: ["Thomas Jefferson", "Abraham Lincoln", "George Washington", "John Adams"], answer: 2 },
     { q: "When did the French Revolution begin?", options: ["1776", "1799", "1789", "1804"], answer: 2 },
     { q: "When did the Berlin Wall fall?", options: ["1991", "1985", "1989", "1987"], answer: 2 },
     { q: "Who discovered the Americas in 1492?", options: ["Vasco da Gama", "Christopher Columbus", "Ferdinand Magellan", "Amerigo Vespucci"], answer: 1 },
     { q: "When did World War I start?", options: ["1914", "1918", "1939", "1910"], answer: 0 },
     { q: "Who invented the telephone?", options: ["Thomas Edison", "Nikola Tesla", "Alexander Graham Bell", "Guglielmo Marconi"], answer: 2 },
     { q: "When did the Soviet Union collapse?", options: ["1989", "1993", "1991", "1985"], answer: 2 },
-    { q: "What was the Cold War mainly between?", options: ["USA and China", "UK and Germany", "USA and USSR", "France and Russia"], answer: 2 },
+    { q: "Cold War was mainly between?", options: ["USA and China", "UK and Germany", "USA and USSR", "France and Russia"], answer: 2 },
     { q: "Who wrote 'The Communist Manifesto'?", options: ["Lenin and Stalin", "Marx and Engels", "Mao and Castro", "Trotsky and Lenin"], answer: 1 },
   ],
 };
-
-const ALL_SUBJECTS = Object.keys(QUESTION_BANK);
 
 function shuffle<T>(arr: T[]): T[] {
   return [...arr].sort(() => Math.random() - 0.5);
@@ -111,11 +109,11 @@ export default function QuizModal({ visible, subject, onClose }: Props) {
   const [selected, setSelected] = useState<number | null>(null);
   const [score, setScore] = useState(0);
   const [done, setDone] = useState(false);
+  const [totalXP, setTotalXP] = useState(0);
   const [fadeAnim] = useState(new Animated.Value(1));
 
   const q = questions[current];
   const progress = (current + 1) / questions.length;
-  const xpEarned = score * 5;
 
   const handleSelect = useCallback(
     (idx: number) => {
@@ -125,14 +123,19 @@ export default function QuizModal({ visible, subject, onClose }: Props) {
       if (correct) {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         setScore((s) => s + 1);
+        setTotalXP((x) => x + 5);
       } else {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       }
+
       setTimeout(() => {
         Animated.timing(fadeAnim, { toValue: 0, duration: 200, useNativeDriver: true }).start(() => {
-          if (current + 1 >= questions.length) {
+          const isLast = current + 1 >= questions.length;
+          if (isLast) {
+            const finalXP = (score + (correct ? 1 : 0)) * 5;
             incrementQuizzes();
-            addXP(xpEarned + (score + (correct ? 1 : 0)) * 5 - score * 5);
+            addXP(finalXP);
+            setTotalXP(finalXP);
             setDone(true);
           } else {
             setCurrent((c) => c + 1);
@@ -142,7 +145,7 @@ export default function QuizModal({ visible, subject, onClose }: Props) {
         });
       }, 900);
     },
-    [selected, q, current, questions.length, fadeAnim, score, xpEarned, addXP, incrementQuizzes]
+    [selected, q, current, questions.length, fadeAnim, score, addXP, incrementQuizzes]
   );
 
   const optionBg = (idx: number) => {
@@ -164,20 +167,22 @@ export default function QuizModal({ visible, subject, onClose }: Props) {
     return colors.textMuted;
   };
 
-  const grade = () => {
-    const pct = score / questions.length;
+  const grade = (s: number) => {
+    const pct = s / questions.length;
     if (pct >= 0.9) return { label: "Excellent! 🏆", color: "#F59E0B" };
     if (pct >= 0.7) return { label: "Great job! ⭐", color: "#5C5EF0" };
     if (pct >= 0.5) return { label: "Good effort! 💪", color: "#2DD4BF" };
     return { label: "Keep studying! 📚", color: "#9CA3AF" };
   };
 
+  const finalScore = done ? score : 0;
+  const g = grade(finalScore);
+
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         {!done ? (
           <>
-            {/* Header */}
             <View style={[styles.header, { borderBottomColor: colors.border }]}>
               <Pressable onPress={onClose} style={styles.closeBtn}>
                 <Ionicons name="close" size={22} color={colors.textSecondary} />
@@ -198,14 +203,12 @@ export default function QuizModal({ visible, subject, onClose }: Props) {
               </View>
             </View>
 
-            {/* Progress bar */}
             <View style={[styles.progressTrack, { backgroundColor: colors.card }]}>
               <View style={[styles.progressFill, { width: `${progress * 100}%`, backgroundColor: colors.primary }]} />
             </View>
 
             <ScrollView contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
               <Animated.View style={{ opacity: fadeAnim }}>
-                {/* Question */}
                 <View style={[styles.questionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                   <Text style={[styles.questionNum, { color: colors.primary, fontFamily: "Inter_600SemiBold" }]}>
                     Q{current + 1}
@@ -214,16 +217,11 @@ export default function QuizModal({ visible, subject, onClose }: Props) {
                     {q.q}
                   </Text>
                 </View>
-
-                {/* Options */}
                 <View style={styles.options}>
                   {q.options.map((opt, idx) => (
                     <Pressable
                       key={idx}
-                      style={[
-                        styles.option,
-                        { backgroundColor: optionBg(idx), borderColor: optionBorder(idx) },
-                      ]}
+                      style={[styles.option, { backgroundColor: optionBg(idx), borderColor: optionBorder(idx) }]}
                       onPress={() => handleSelect(idx)}
                     >
                       <View style={[styles.optionLetter, { borderColor: optionBorder(idx) }]}>
@@ -247,26 +245,24 @@ export default function QuizModal({ visible, subject, onClose }: Props) {
             </ScrollView>
           </>
         ) : (
-          /* Results Screen */
           <ScrollView contentContainerStyle={styles.results} showsVerticalScrollIndicator={false}>
-            <View style={[styles.resultIcon, { backgroundColor: grade().color + "22" }]}>
-              <Ionicons name="trophy" size={48} color={grade().color} />
+            <View style={[styles.resultIcon, { backgroundColor: g.color + "22" }]}>
+              <Ionicons name="trophy" size={48} color={g.color} />
             </View>
-            <Text style={[styles.gradeLabel, { color: grade().color, fontFamily: "Inter_700Bold" }]}>
-              {grade().label}
+            <Text style={[styles.gradeLabel, { color: g.color, fontFamily: "Inter_700Bold" }]}>
+              {g.label}
             </Text>
             <Text style={[styles.scoreDisplay, { color: colors.text, fontFamily: "Inter_700Bold" }]}>
-              {score} / {questions.length}
+              {finalScore} / {questions.length}
             </Text>
             <Text style={[styles.scoreSubtitle, { color: colors.textMuted, fontFamily: "Inter_400Regular" }]}>
               correct answers
             </Text>
-
             <View style={styles.resultStats}>
               <View style={[styles.resultStat, { backgroundColor: "#F59E0B22", borderColor: "#F59E0B55" }]}>
                 <Ionicons name="star" size={20} color="#F59E0B" />
                 <Text style={[styles.resultStatVal, { color: "#F59E0B", fontFamily: "Inter_700Bold" }]}>
-                  +{xpEarned} XP
+                  +{totalXP} XP
                 </Text>
                 <Text style={[styles.resultStatLabel, { color: colors.textMuted, fontFamily: "Inter_400Regular" }]}>
                   earned
@@ -275,18 +271,14 @@ export default function QuizModal({ visible, subject, onClose }: Props) {
               <View style={[styles.resultStat, { backgroundColor: "#5C5EF022", borderColor: "#5C5EF055" }]}>
                 <Ionicons name="help-circle" size={20} color="#5C5EF0" />
                 <Text style={[styles.resultStatVal, { color: "#5C5EF0", fontFamily: "Inter_700Bold" }]}>
-                  {Math.round((score / questions.length) * 100)}%
+                  {Math.round((finalScore / questions.length) * 100)}%
                 </Text>
                 <Text style={[styles.resultStatLabel, { color: colors.textMuted, fontFamily: "Inter_400Regular" }]}>
                   accuracy
                 </Text>
               </View>
             </View>
-
-            <Pressable
-              style={[styles.doneBtn, { backgroundColor: colors.primary }]}
-              onPress={onClose}
-            >
+            <Pressable style={[styles.doneBtn, { backgroundColor: colors.primary }]} onPress={onClose}>
               <Text style={[styles.doneBtnTxt, { fontFamily: "Inter_700Bold" }]}>Done</Text>
             </Pressable>
           </ScrollView>
@@ -298,55 +290,21 @@ export default function QuizModal({ visible, subject, onClose }: Props) {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingHorizontal: 20,
-    paddingTop: 24,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-  },
+  header: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 20, paddingTop: 24, paddingBottom: 16, borderBottomWidth: 1 },
   closeBtn: { padding: 4 },
   quizTitle: { fontSize: 17 },
   quizSub: { fontSize: 12, marginTop: 2 },
-  scorePill: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
+  scorePill: { flexDirection: "row", alignItems: "center", gap: 5, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 20 },
   scoreNum: { fontSize: 15 },
   progressTrack: { height: 4 },
   progressFill: { height: 4, borderRadius: 2 },
   body: { padding: 20, gap: 20 },
-  questionCard: {
-    padding: 22,
-    borderRadius: 20,
-    borderWidth: 1,
-    gap: 10,
-  },
+  questionCard: { padding: 22, borderRadius: 20, borderWidth: 1, gap: 10 },
   questionNum: { fontSize: 12, letterSpacing: 1 },
   questionText: { fontSize: 18, lineHeight: 26 },
   options: { gap: 12 },
-  option: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
-    padding: 16,
-    borderRadius: 16,
-    borderWidth: 1.5,
-  },
-  optionLetter: {
-    width: 32,
-    height: 32,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    alignItems: "center",
-    justifyContent: "center",
-  },
+  option: { flexDirection: "row", alignItems: "center", gap: 14, padding: 16, borderRadius: 16, borderWidth: 1.5 },
+  optionLetter: { width: 32, height: 32, borderRadius: 10, borderWidth: 1.5, alignItems: "center", justifyContent: "center" },
   optionLetterTxt: { fontSize: 13 },
   optionTxt: { flex: 1, fontSize: 15, lineHeight: 21 },
   results: { padding: 32, alignItems: "center", gap: 16 },
@@ -355,22 +313,9 @@ const styles = StyleSheet.create({
   scoreDisplay: { fontSize: 52, lineHeight: 60 },
   scoreSubtitle: { fontSize: 15 },
   resultStats: { flexDirection: "row", gap: 12, marginTop: 8 },
-  resultStat: {
-    flex: 1,
-    alignItems: "center",
-    padding: 18,
-    borderRadius: 18,
-    borderWidth: 1,
-    gap: 6,
-  },
+  resultStat: { flex: 1, alignItems: "center", padding: 18, borderRadius: 18, borderWidth: 1, gap: 6 },
   resultStatVal: { fontSize: 22 },
   resultStatLabel: { fontSize: 12 },
-  doneBtn: {
-    width: "100%",
-    paddingVertical: 16,
-    borderRadius: 18,
-    alignItems: "center",
-    marginTop: 16,
-  },
+  doneBtn: { width: "100%", paddingVertical: 16, borderRadius: 18, alignItems: "center", marginTop: 16 },
   doneBtnTxt: { color: "#fff", fontSize: 16 },
 });

@@ -11,12 +11,21 @@
     "splash": {
       "image": "./assets/images/icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#111827"
+      "backgroundColor": "#0A0A0F"
     },
     "ios": {
-      "supportsTablet": false
+      "supportsTablet": false,
+      "bundleIdentifier": "com.vitalaai.app",
+      "buildNumber": "1"
     },
-    "android": {},
+    "android": {
+      "package": "com.vitalaai.app",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/icon.png",
+        "backgroundColor": "#0A0A0F"
+      }
+    },
     "web": {
       "favicon": "./assets/images/icon.png"
     },

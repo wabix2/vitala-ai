@@ -6,6 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useColors } from "@/hooks/useColors";
 import { useUser } from "@/context/UserContext";
 import QuizModal from "@/components/QuizModal";
+import FlashcardModal from "@/components/FlashcardModal";
 
 const SUBJECTS = ["All", "Biology", "Math", "Chemistry", "Physics", "History"];
 
@@ -22,7 +23,7 @@ const MODES = [
     id: "flashcard",
     icon: "layers" as const,
     label: "Flashcards",
-    desc: "Spaced repetition for efficient long-term memorization",
+    desc: "Flip cards with spaced repetition for long-term memorization",
     color: "#2DD4BF",
     xpLabel: "+25 XP / deck",
   },
@@ -30,7 +31,7 @@ const MODES = [
 
 const RECENT = [
   { subject: "Biology", mode: "Quiz", score: "8 / 10", xp: "+40 XP", date: "Today", icon: "help-circle" as const },
-  { subject: "Chemistry", mode: "Flashcards", score: "24 cards", xp: "+25 XP", date: "Yesterday", icon: "layers" as const },
+  { subject: "Chemistry", mode: "Flashcards", score: "10 cards", xp: "+25 XP", date: "Yesterday", icon: "layers" as const },
   { subject: "Math", mode: "Quiz", score: "9 / 10", xp: "+45 XP", date: "Mon", icon: "help-circle" as const },
 ];
 
@@ -40,6 +41,7 @@ export default function StudyScreen() {
   const { user } = useUser();
   const [subject, setSubject] = useState("All");
   const [quizVisible, setQuizVisible] = useState(false);
+  const [flashVisible, setFlashVisible] = useState(false);
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const botPad = Platform.OS === "web" ? 34 : insets.bottom + 24;
 
@@ -56,7 +58,7 @@ export default function StudyScreen() {
           <View style={[styles.streakPill, { backgroundColor: "#FF960022" }]}>
             <Ionicons name="flame" size={14} color="#FF9600" />
             <Text style={[styles.streakTxt, { color: "#FF9600", fontFamily: "Inter_600SemiBold" }]}>
-              {user.streak} day streak
+              {user.streak}d streak
             </Text>
           </View>
         </View>
@@ -83,10 +85,7 @@ export default function StudyScreen() {
               <Text
                 style={[
                   styles.chipTxt,
-                  {
-                    color: subject === s ? "#fff" : colors.textSecondary,
-                    fontFamily: "Inter_500Medium",
-                  },
+                  { color: subject === s ? "#fff" : colors.textSecondary, fontFamily: "Inter_500Medium" },
                 ]}
               >
                 {s}
@@ -107,6 +106,7 @@ export default function StudyScreen() {
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                 if (m.id === "quiz") setQuizVisible(true);
+                else if (m.id === "flashcard") setFlashVisible(true);
               }}
             >
               <View style={[styles.modeIconWrap, { backgroundColor: m.color + "22" }]}>
@@ -170,27 +170,19 @@ export default function StudyScreen() {
         subject={subject}
         onClose={() => setQuizVisible(false)}
       />
+      <FlashcardModal
+        visible={flashVisible}
+        subject={subject}
+        onClose={() => setFlashVisible(false)}
+      />
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    marginBottom: 20,
-  },
+  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, marginBottom: 20 },
   headerTitle: { fontSize: 28 },
-  streakPill: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
+  streakPill: { flexDirection: "row", alignItems: "center", gap: 5, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
   streakTxt: { fontSize: 13 },
   chipsRow: { gap: 8, paddingHorizontal: 20, paddingBottom: 4 },
   chip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, borderWidth: 1 },
@@ -202,26 +194,11 @@ const styles = StyleSheet.create({
   modeDesc: { fontSize: 12, lineHeight: 17 },
   xpPill: { alignSelf: "flex-start", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
   xpPillTxt: { fontSize: 11 },
-  startBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    paddingVertical: 10,
-    borderRadius: 12,
-    marginTop: 4,
-  },
+  startBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, paddingVertical: 10, borderRadius: 12, marginTop: 4 },
   startTxt: { color: "#fff", fontSize: 14 },
   sectionTitle: { fontSize: 17, marginBottom: 12, paddingHorizontal: 20 },
   recentList: { gap: 10, paddingHorizontal: 20, marginBottom: 20 },
-  recentRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    padding: 14,
-    borderRadius: 14,
-    borderWidth: 1,
-  },
+  recentRow: { flexDirection: "row", alignItems: "center", gap: 12, padding: 14, borderRadius: 14, borderWidth: 1 },
   recentIcon: { width: 38, height: 38, borderRadius: 10, alignItems: "center", justifyContent: "center" },
   recentSubject: { fontSize: 14 },
   recentMeta: { fontSize: 12, marginTop: 2 },

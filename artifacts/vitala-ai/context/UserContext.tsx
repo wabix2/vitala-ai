@@ -11,6 +11,7 @@ interface UserState {
   rank: number;
   feynmanSessionsToday: number;
   lastActiveDate: string;
+  isOnboarded: boolean;
 }
 
 interface UserContextType {
@@ -18,40 +19,65 @@ interface UserContextType {
   addXP: (amount: number) => void;
   incrementFeynman: () => void;
   incrementQuizzes: () => void;
+  completeOnboarding: (name: string) => void;
 }
 
 const DEFAULT: UserState = {
   userName: "Scholar",
-  level: 4,
-  xp: 1240,
-  xpToNext: 1500,
-  streak: 7,
-  totalQuizzes: 42,
-  rank: 3,
-  feynmanSessionsToday: 1,
-  lastActiveDate: new Date().toDateString(),
+  level: 1,
+  xp: 0,
+  xpToNext: 500,
+  streak: 0,
+  totalQuizzes: 0,
+  rank: 999,
+  feynmanSessionsToday: 0,
+  lastActiveDate: "",
+  isOnboarded: false,
 };
 
-const KEY = "@vitala_user_v1";
+const KEY = "@vitala_user_v2";
 
 const UserContext = createContext<UserContextType | null>(null);
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserState>(DEFAULT);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     AsyncStorage.getItem(KEY)
       .then((raw) => {
-        if (!raw) return;
+        if (!raw) {
+          setLoaded(true);
+          return;
+        }
         const parsed = JSON.parse(raw) as UserState;
         const today = new Date().toDateString();
-        if (parsed.lastActiveDate !== today) {
-          parsed.feynmanSessionsToday = 0;
-          parsed.lastActiveDate = today;
+        const yesterday = new Date(Date.now() - 86_400_000).toDateString();
+
+        // Fix streak
+        let streak = parsed.streak ?? 0;
+        if (parsed.lastActiveDate === today) {
+          // already counted today
+        } else if (parsed.lastActiveDate === yesterday) {
+          streak += 1; // consecutive day!
+        } else if (parsed.lastActiveDate !== today) {
+          streak = 1; // broke streak, start fresh
         }
-        setUser({ ...DEFAULT, ...parsed });
+
+        // Reset daily feynman counter
+        const feynmanSessionsToday =
+          parsed.lastActiveDate === today ? parsed.feynmanSessionsToday : 0;
+
+        setUser({
+          ...DEFAULT,
+          ...parsed,
+          streak,
+          feynmanSessionsToday,
+          lastActiveDate: today,
+        });
+        setLoaded(true);
       })
-      .catch(() => {});
+      .catch(() => setLoaded(true));
   }, []);
 
   const persist = useCallback((next: UserState) => {
@@ -63,7 +89,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     setUser((prev) => {
       let { xp, xpToNext, level } = prev;
       xp += amount;
-      if (xp >= xpToNext) {
+      while (xp >= xpToNext) {
         xp -= xpToNext;
         level += 1;
         xpToNext = Math.floor(xpToNext * 1.25);
@@ -75,16 +101,41 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const incrementFeynman = useCallback(() => {
-    persist({ ...user, feynmanSessionsToday: user.feynmanSessionsToday + 1 });
-  }, [user, persist]);
+    setUser((prev) => {
+      const next = { ...prev, feynmanSessionsToday: prev.feynmanSessionsToday + 1 };
+      AsyncStorage.setItem(KEY, JSON.stringify(next)).catch(() => {});
+      return next;
+    });
+    addXP(10);
+  }, [addXP]);
 
   const incrementQuizzes = useCallback(() => {
-    persist({ ...user, totalQuizzes: user.totalQuizzes + 1 });
-    addXP(50);
-  }, [user, persist, addXP]);
+    // XP is awarded separately by QuizModal per correct answer — don't double-add here
+    setUser((prev) => {
+      const next = { ...prev, totalQuizzes: prev.totalQuizzes + 1 };
+      AsyncStorage.setItem(KEY, JSON.stringify(next)).catch(() => {});
+      return next;
+    });
+  }, []);
+
+  const completeOnboarding = useCallback(
+    (name: string) => {
+      const today = new Date().toDateString();
+      persist({
+        ...DEFAULT,
+        userName: name.trim() || "Scholar",
+        isOnboarded: true,
+        lastActiveDate: today,
+        streak: 1,
+      });
+    },
+    [persist]
+  );
+
+  if (!loaded) return null;
 
   return (
-    <UserContext.Provider value={{ user, addXP, incrementFeynman, incrementQuizzes }}>
+    <UserContext.Provider value={{ user, addXP, incrementFeynman, incrementQuizzes, completeOnboarding }}>
       {children}
     </UserContext.Provider>
   );
