@@ -1,0 +1,27 @@
+kind = "mobile"
+previewPath = "/vitala-ai/"
+title = "Vitala AI"
+version = "1.0.0"
+id = "artifacts/vitala-ai"
+router = "expo-domain"
+
+[[integratedSkills]]
+name = "expo"
+version = "1.0.0"
+
+[[services]]
+ensurePreviewReachable = "/status"
+name = "expo"
+paths = [ "/vitala-ai/" ]
+localPort = 23669
+
+[services.development]
+run = "pnpm --filter @workspace/vitala-ai run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/vitala-ai", "run", "build" ]
+run = [ "pnpm", "--filter", "@workspace/vitala-ai", "run", "serve" ]
+
+[services.env]
+PORT = "23669"
+BASE_PATH = "/vitala-ai/"
