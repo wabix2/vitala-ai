@@ -13,7 +13,7 @@ const REVENUECAT_ANDROID_API_KEY =
 const REVENUECAT_APPLE_API_KEY =
   process.env.EXPO_PUBLIC_REVENUECAT_APPLE_API_KEY ?? "";
 
-export const ENTITLEMENT_ID = "vitala ai Pro";
+export const ENTITLEMENT_ID = "vitala_ai_pro";
 
 let initialized = false;
 

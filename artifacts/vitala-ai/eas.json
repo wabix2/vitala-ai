@@ -6,26 +6,17 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal",
-      "env": {
-        "EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY": "test_jKojaAuEepLTTttcOAGNRVBsHGo"
-      }
+      "distribution": "internal"
     },
     "preview": {
       "distribution": "internal",
       "android": {
         "buildType": "apk"
-      },
-      "env": {
-        "EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY": "test_jKojaAuEepLTTttcOAGNRVBsHGo"
       }
     },
     "production": {
       "android": {
         "buildType": "app-bundle"
-      },
-      "env": {
-        "EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY": "test_jKojaAuEepLTTttcOAGNRVBsHGo"
       }
     }
   },
