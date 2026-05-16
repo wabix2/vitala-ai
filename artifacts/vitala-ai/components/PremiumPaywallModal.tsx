@@ -2,6 +2,7 @@ import * as Haptics from "expo-haptics";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Modal,
   Platform,
   Pressable,
@@ -13,7 +14,13 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import type { PurchasesPackage } from "react-native-purchases";
 import { useColors } from "@/hooks/useColors";
-import { getOffering, type VitalaOffering } from "@/utils/premium";
+import {
+  getOffering,
+  isPurchasesInitialized,
+  purchasePackage,
+  restorePurchases,
+  type VitalaOffering,
+} from "@/utils/premium";
 
 const FALLBACK = {
   monthly:  { price: "$4.99",  per: "per month",                legal: "$4.99 billed monthly. Cancel anytime from Google Play." },
@@ -44,15 +51,19 @@ export default function PremiumPaywallModal({ visible, onClose, onPurchaseSucces
   const [plan, setPlan] = useState<PlanKey>("yearly");
   const [offering, setOffering] = useState<VitalaOffering | null>(null);
   const [loadingOffering, setLoadingOffering] = useState(false);
+  const [purchasing, setPurchasing] = useState(false);
+  const [restoring, setRestoring] = useState(false);
+
+  const isInitialized = isPurchasesInitialized();
 
   useEffect(() => {
-    if (!visible || Platform.OS === "web") return;
+    if (!visible || Platform.OS === "web" || !isInitialized) return;
     setLoadingOffering(true);
     getOffering()
       .then(setOffering)
       .catch(() => {})
       .finally(() => setLoadingOffering(false));
-  }, [visible]);
+  }, [visible, isInitialized]);
 
   const packageForPlan = (key: PlanKey): PurchasesPackage | null => {
     if (!offering) return null;
@@ -64,6 +75,57 @@ export default function PremiumPaywallModal({ visible, onClose, onPurchaseSucces
 
   const priceFor = (key: PlanKey): string =>
     packageForPlan(key)?.product?.priceString ?? FALLBACK[key].price;
+
+  const selectedPackage = packageForPlan(plan);
+  const canPurchase = isInitialized && !!selectedPackage && !purchasing && !restoring;
+
+  async function handlePurchase() {
+    if (!selectedPackage) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setPurchasing(true);
+    try {
+      const success = await purchasePackage(selectedPackage);
+      if (success) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        onPurchaseSuccess?.();
+        onClose();
+      }
+    } catch (e: any) {
+      if (!e?.userCancelled) {
+        Alert.alert(
+          "Purchase failed",
+          e?.message ?? "Something went wrong. Please try again.",
+          [{ text: "OK" }]
+        );
+      }
+    } finally {
+      setPurchasing(false);
+    }
+  }
+
+  async function handleRestore() {
+    Haptics.selectionAsync();
+    setRestoring(true);
+    try {
+      const success = await restorePurchases();
+      if (success) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Alert.alert("Purchases restored", "Your Vitala Pro access has been restored.", [
+          { text: "Great!", onPress: () => { onPurchaseSuccess?.(); onClose(); } },
+        ]);
+      } else {
+        Alert.alert(
+          "Nothing to restore",
+          "No previous purchases were found for this account.",
+          [{ text: "OK" }]
+        );
+      }
+    } catch {
+      Alert.alert("Restore failed", "Please check your connection and try again.", [{ text: "OK" }]);
+    } finally {
+      setRestoring(false);
+    }
+  }
 
   const PLANS: { key: PlanKey; label: string; badge?: string; dark?: boolean }[] = [
     { key: "monthly",  label: "Monthly" },
@@ -105,7 +167,7 @@ export default function PremiumPaywallModal({ visible, onClose, onPurchaseSucces
             <View style={styles.offeringLoader}>
               <ActivityIndicator color={colors.primary} />
               <Text style={[styles.loadingTxt, { color: colors.textMuted, fontFamily: "Inter_400Regular" }]}>
-                Loading plans…
+                Loading plans...
               </Text>
             </View>
           ) : (
@@ -182,21 +244,56 @@ export default function PremiumPaywallModal({ visible, onClose, onPurchaseSucces
             </Text>
           </View>
 
-          {/* Purchase Unavailable CTA */}
-          <View style={[styles.cta, styles.ctaDisabled]}>
-            <Ionicons name="lock-closed" size={18} color="rgba(255,255,255,0.6)" />
-            <Text style={[styles.ctaTxt, { fontFamily: "Inter_700Bold", color: "rgba(255,255,255,0.7)" }]}>
-              Purchase Unavailable
-            </Text>
-          </View>
+          {/* Purchase CTA */}
+          {Platform.OS === "web" ? (
+            <View style={[styles.cta, styles.ctaDisabled]}>
+              <Ionicons name="lock-closed" size={18} color="rgba(255,255,255,0.6)" />
+              <Text style={[styles.ctaTxt, { fontFamily: "Inter_700Bold", color: "rgba(255,255,255,0.7)" }]}>
+                Available on Android & iOS
+              </Text>
+            </View>
+          ) : !isInitialized ? (
+            <View style={[styles.cta, styles.ctaDisabled]}>
+              <Ionicons name="lock-closed" size={18} color="rgba(255,255,255,0.6)" />
+              <Text style={[styles.ctaTxt, { fontFamily: "Inter_700Bold", color: "rgba(255,255,255,0.7)" }]}>
+                Purchases not configured
+              </Text>
+            </View>
+          ) : (
+            <Pressable
+              style={[styles.cta, !canPurchase && styles.ctaDisabled]}
+              onPress={handlePurchase}
+              disabled={!canPurchase}
+            >
+              {purchasing ? (
+                <ActivityIndicator color="#FFFFFF" size="small" />
+              ) : (
+                <>
+                  <Ionicons name="flash" size={18} color="#FFFFFF" />
+                  <Text style={[styles.ctaTxt, { fontFamily: "Inter_700Bold" }]}>
+                    {plan === "lifetime"
+                      ? `Get Lifetime Access · ${priceFor("lifetime")}`
+                      : plan === "yearly"
+                      ? `Start Annual Plan · ${priceFor("yearly")}`
+                      : `Start Monthly Plan · ${priceFor("monthly")}`}
+                  </Text>
+                </>
+              )}
+            </Pressable>
+          )}
 
-          {/* Coming soon info */}
-          <View style={[styles.comingSoonNote, { backgroundColor: "#F0F9FF", borderColor: "#BAE6FD" }]}>
-            <Ionicons name="information-circle" size={15} color="#0EA5E9" />
-            <Text style={[styles.comingSoonTxt, { color: "#0369A1", fontFamily: "Inter_400Regular" }]}>
-              In-app purchases will be available once the app is published on Google Play. All features above will unlock automatically.
-            </Text>
-          </View>
+          {/* Restore purchases */}
+          {Platform.OS !== "web" && isInitialized && (
+            <Pressable style={styles.restoreBtn} onPress={handleRestore} disabled={restoring || purchasing}>
+              {restoring ? (
+                <ActivityIndicator color={colors.textMuted} size="small" />
+              ) : (
+                <Text style={[styles.restoreTxt, { color: colors.textMuted, fontFamily: "Inter_400Regular" }]}>
+                  Restore previous purchases
+                </Text>
+              )}
+            </Pressable>
+          )}
 
           {/* Legal */}
           <Text style={[styles.legal, { color: colors.textMuted, fontFamily: "Inter_400Regular" }]}>
@@ -256,13 +353,11 @@ const styles = StyleSheet.create({
     flexDirection: "row", alignItems: "center", justifyContent: "center",
     gap: 10, paddingVertical: 18, borderRadius: 16,
     backgroundColor: "#1D72E8",
+    minHeight: 58,
   },
   ctaDisabled: { backgroundColor: "#94A3B8" },
   ctaTxt: { color: "#FFFFFF", fontSize: 16 },
-  comingSoonNote: {
-    flexDirection: "row", alignItems: "flex-start",
-    gap: 8, padding: 12, borderRadius: 12, borderWidth: 1,
-  },
-  comingSoonTxt: { fontSize: 12, flex: 1, lineHeight: 17 },
+  restoreBtn: { alignItems: "center", paddingVertical: 8 },
+  restoreTxt: { fontSize: 13 },
   legal: { fontSize: 11, textAlign: "center", lineHeight: 16 },
 });
