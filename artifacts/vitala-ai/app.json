@@ -47,8 +47,7 @@
           "color": "#1D72E8",
           "defaultChannel": "streak-reminder"
         }
-      ],
-      "react-native-purchases"
+      ]
     ],
     "experiments": {
       "typedRoutes": true
