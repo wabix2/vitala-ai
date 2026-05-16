@@ -52,7 +52,7 @@
       [
         "react-native-purchases",
         {
-          "androidApiKey": "YOUR_GOOGLE_PLAY_API_KEY_PLACEHOLDER"
+          "androidApiKey": "test_jKojaAuEepLTTttcOAGNRVBsHGo"
         }
       ]
     ],

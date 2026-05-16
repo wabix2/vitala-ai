@@ -2,7 +2,6 @@ import * as Haptics from "expo-haptics";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Modal,
   Platform,
   Pressable,
@@ -12,37 +11,27 @@ import {
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import type { PurchasesPackage } from "react-native-purchases";
 import { useColors } from "@/hooks/useColors";
-import { purchasePremium, restorePurchases } from "@/utils/premium";
+import { getOffering, type VitalaOffering } from "@/utils/premium";
 
-const MONTHLY_PRICE = "$4.99";
-const ANNUAL_PRICE = "$29.99";
-const ANNUAL_PER_MONTH = "$2.50";
-const ANNUAL_SAVINGS = "Save 50%";
+const FALLBACK = {
+  monthly:  { price: "$4.99",  per: "per month",                legal: "$4.99 billed monthly. Cancel anytime from Google Play." },
+  yearly:   { price: "$29.99", per: "$2.50/mo · billed yearly", legal: "$29.99 billed annually. Auto-renews unless cancelled 24 h before renewal." },
+  lifetime: { price: "$59.99", per: "one-time payment",         legal: "One-time purchase. No recurring charges." },
+};
 
-const FEATURES_FREE = [
-  { label: "3 Feynman AI sessions / day", included: true },
-  { label: "Unlimited quizzes & flashcards", included: true },
-  { label: "XP, levels & streak tracking", included: true },
-  { label: "Global leaderboard", included: true },
-  { label: "Unlimited AI sessions", included: false },
-  { label: "Advanced progress analytics", included: false },
-  { label: "Priority AI response speed", included: false },
-  { label: "Early access to new subjects", included: false },
+const FEATURES = [
+  "Everything in Free",
+  "Unlimited AI chat sessions",
+  "Unlimited Feynman sessions",
+  "Advanced progress analytics",
+  "Priority AI response speed",
+  "Early access to new subjects",
+  "Achievement export & sharing",
 ];
 
-const FEATURES_PREMIUM = [
-  { label: "Everything in Free", included: true },
-  { label: "Unlimited AI chat sessions", included: true },
-  { label: "Unlimited Feynman sessions", included: true },
-  { label: "Advanced progress analytics", included: true },
-  { label: "Priority AI response speed", included: true },
-  { label: "Early access to new subjects", included: true },
-  { label: "Achievement export & sharing", included: true },
-  { label: "Cancel anytime", included: true },
-];
-
-type Plan = "monthly" | "annual";
+type PlanKey = "monthly" | "yearly" | "lifetime";
 
 interface Props {
   visible: boolean;
@@ -52,51 +41,35 @@ interface Props {
 
 export default function PremiumPaywallModal({ visible, onClose, onPurchaseSuccess }: Props) {
   const colors = useColors();
-  const [plan, setPlan] = useState<Plan>("annual");
-  const [loading, setLoading] = useState(false);
+  const [plan, setPlan] = useState<PlanKey>("yearly");
+  const [offering, setOffering] = useState<VitalaOffering | null>(null);
+  const [loadingOffering, setLoadingOffering] = useState(false);
 
-  const handlePurchase = async () => {
-    if (Platform.OS === "web") {
-      Alert.alert("Premium", "Purchase is available on iOS and Android only.");
-      return;
-    }
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setLoading(true);
-    try {
-      const success = await purchasePremium();
-      if (success) {
-        Alert.alert(
-          "Welcome to Premium!",
-          "You now have unlimited access to all features.",
-          [{ text: "Let's go!", onPress: () => { onPurchaseSuccess?.(); onClose(); } }]
-        );
-      } else {
-        Alert.alert("Purchase Cancelled", "You can try again anytime.");
-      }
-    } catch {
-      Alert.alert("Purchase Failed", "Please try again or restore purchases.");
-    } finally {
-      setLoading(false);
-    }
+  useEffect(() => {
+    if (!visible || Platform.OS === "web") return;
+    setLoadingOffering(true);
+    getOffering()
+      .then(setOffering)
+      .catch(() => {})
+      .finally(() => setLoadingOffering(false));
+  }, [visible]);
+
+  const packageForPlan = (key: PlanKey): PurchasesPackage | null => {
+    if (!offering) return null;
+    if (key === "monthly")  return offering.monthly;
+    if (key === "yearly")   return offering.yearly;
+    if (key === "lifetime") return offering.lifetime;
+    return null;
   };
 
-  const handleRestore = async () => {
-    setLoading(true);
-    try {
-      const restored = await restorePurchases();
-      if (restored) {
-        Alert.alert("Restored!", "Your premium access has been restored.", [
-          { text: "Continue", onPress: () => { onPurchaseSuccess?.(); onClose(); } },
-        ]);
-      } else {
-        Alert.alert("Nothing to Restore", "No previous purchases found for this account.");
-      }
-    } catch {
-      Alert.alert("Restore Failed", "Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const priceFor = (key: PlanKey): string =>
+    packageForPlan(key)?.product?.priceString ?? FALLBACK[key].price;
+
+  const PLANS: { key: PlanKey; label: string; badge?: string; dark?: boolean }[] = [
+    { key: "monthly",  label: "Monthly" },
+    { key: "yearly",   label: "Annual",   badge: "Save 50%", dark: true },
+    { key: "lifetime", label: "Lifetime", badge: "Best Value" },
+  ];
 
   return (
     <Modal
@@ -106,158 +79,129 @@ export default function PremiumPaywallModal({ visible, onClose, onPurchaseSucces
       onRequestClose={onClose}
     >
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        {/* Header */}
-        <View style={[styles.heroSection, { backgroundColor: "#1D72E8" }]}>
+
+        {/* Hero */}
+        <View style={styles.hero}>
           <Pressable style={styles.closeBtn} onPress={onClose}>
             <Ionicons name="close" size={22} color="rgba(255,255,255,0.8)" />
           </Pressable>
-          <View style={styles.heroContent}>
-            <View style={styles.heroIconWrap}>
-              <Ionicons name="flash" size={38} color="#FFFFFF" />
-            </View>
-            <Text style={[styles.heroTitle, { fontFamily: "Inter_700Bold" }]}>
-              Vitala Premium
-            </Text>
-            <Text style={[styles.heroSub, { fontFamily: "Inter_400Regular" }]}>
-              Unlock unlimited AI learning, powered by the Feynman Technique
-            </Text>
+          <View style={styles.heroIconWrap}>
+            <Ionicons name="flash" size={38} color="#FFFFFF" />
           </View>
+          <Text style={[styles.heroTitle, { fontFamily: "Inter_700Bold" }]}>Vitala Pro</Text>
+          <Text style={[styles.heroSub, { fontFamily: "Inter_400Regular" }]}>
+            Unlimited AI learning — powered by the Feynman Technique
+          </Text>
         </View>
 
-        <ScrollView contentContainerStyle={styles.scrollBody} showsVerticalScrollIndicator={false}>
-          {/* Plan Selector */}
-          <Text style={[styles.sectionLabel, { color: colors.textMuted, fontFamily: "Inter_600SemiBold" }]}>
+        <ScrollView contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
+
+          {/* Plan selector */}
+          <Text style={[styles.label, { color: colors.textMuted, fontFamily: "Inter_600SemiBold" }]}>
             CHOOSE YOUR PLAN
           </Text>
 
-          <View style={styles.plansRow}>
-            {/* Monthly */}
-            <Pressable
-              style={[
-                styles.planCard,
-                {
-                  backgroundColor: plan === "monthly" ? colors.primary + "10" : colors.card,
-                  borderColor: plan === "monthly" ? colors.primary : colors.border,
-                  borderWidth: plan === "monthly" ? 2 : 1,
-                },
-              ]}
-              onPress={() => { setPlan("monthly"); Haptics.selectionAsync(); }}
-            >
-              <Text style={[styles.planName, { color: colors.text, fontFamily: "Inter_600SemiBold" }]}>
-                Monthly
+          {loadingOffering ? (
+            <View style={styles.offeringLoader}>
+              <ActivityIndicator color={colors.primary} />
+              <Text style={[styles.loadingTxt, { color: colors.textMuted, fontFamily: "Inter_400Regular" }]}>
+                Loading plans…
               </Text>
-              <Text style={[styles.planPrice, { color: plan === "monthly" ? colors.primary : colors.text, fontFamily: "Inter_700Bold" }]}>
-                {MONTHLY_PRICE}
-              </Text>
-              <Text style={[styles.planPer, { color: colors.textMuted, fontFamily: "Inter_400Regular" }]}>
-                per month
-              </Text>
-              {plan === "monthly" && (
-                <View style={[styles.selectedDot, { backgroundColor: colors.primary }]} />
-              )}
-            </Pressable>
+            </View>
+          ) : (
+            <View style={styles.plansCol}>
+              {PLANS.map(({ key, label, badge, dark }) => {
+                const selected = plan === key;
+                const bg = selected ? (dark ? "#1D72E8" : colors.primary + "12") : colors.card;
+                const bc = selected ? "#1D72E8" : colors.border;
+                const tc = selected && dark ? "#FFFFFF" : colors.text;
+                const sub = selected && dark ? "rgba(255,255,255,0.75)" : colors.textMuted;
+                return (
+                  <Pressable
+                    key={key}
+                    style={[styles.planRow, { backgroundColor: bg, borderColor: bc, borderWidth: selected ? 2 : 1 }]}
+                    onPress={() => { setPlan(key); Haptics.selectionAsync(); }}
+                  >
+                    <View style={[styles.radio, { borderColor: selected ? "#1D72E8" : colors.border }]}>
+                      {selected && <View style={[styles.radioDot, { backgroundColor: dark ? "#FFFFFF" : "#1D72E8" }]} />}
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <View style={styles.planTitleRow}>
+                        <Text style={[styles.planName, { color: tc, fontFamily: "Inter_600SemiBold" }]}>
+                          {label}
+                        </Text>
+                        {badge && (
+                          <View style={[styles.badge, { backgroundColor: dark && selected ? "rgba(255,255,255,0.22)" : "#F59E0B22" }]}>
+                            <Text style={[styles.badgeTxt, { color: dark && selected ? "#FFFFFF" : "#B45309", fontFamily: "Inter_700Bold" }]}>
+                              {badge}
+                            </Text>
+                          </View>
+                        )}
+                      </View>
+                      <Text style={[styles.planSub, { color: sub, fontFamily: "Inter_400Regular" }]}>
+                        {FALLBACK[key].per}
+                      </Text>
+                    </View>
+                    <Text style={[styles.planPrice, { color: tc, fontFamily: "Inter_700Bold" }]}>
+                      {priceFor(key)}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          )}
 
-            {/* Annual — highlighted */}
-            <Pressable
-              style={[
-                styles.planCard,
-                styles.planCardFeatured,
-                {
-                  backgroundColor: plan === "annual" ? "#1D72E8" : colors.card,
-                  borderColor: plan === "annual" ? "#1D72E8" : colors.border,
-                  borderWidth: plan === "annual" ? 2 : 1,
-                },
-              ]}
-              onPress={() => { setPlan("annual"); Haptics.selectionAsync(); }}
-            >
-              <View style={styles.savingsBadge}>
-                <Text style={[styles.savingsTxt, { fontFamily: "Inter_700Bold" }]}>
-                  {ANNUAL_SAVINGS}
-                </Text>
-              </View>
-              <Text style={[styles.planName, { color: plan === "annual" ? "#FFFFFF" : colors.text, fontFamily: "Inter_600SemiBold" }]}>
-                Annual
-              </Text>
-              <Text style={[styles.planPrice, { color: plan === "annual" ? "#FFFFFF" : colors.text, fontFamily: "Inter_700Bold" }]}>
-                {ANNUAL_PRICE}
-              </Text>
-              <Text style={[styles.planPer, { color: plan === "annual" ? "rgba(255,255,255,0.7)" : colors.textMuted, fontFamily: "Inter_400Regular" }]}>
-                {ANNUAL_PER_MONTH}/mo · billed yearly
-              </Text>
-              {plan === "annual" && (
-                <View style={[styles.selectedDot, { backgroundColor: "#FFFFFF" }]} />
-              )}
-            </Pressable>
-          </View>
-
-          {/* What's included */}
-          <Text style={[styles.sectionLabel, { color: colors.textMuted, fontFamily: "Inter_600SemiBold" }]}>
+          {/* Feature list */}
+          <Text style={[styles.label, { color: colors.textMuted, fontFamily: "Inter_600SemiBold" }]}>
             WHAT YOU GET
           </Text>
-
           <View style={[styles.featuresCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            {FEATURES_PREMIUM.map((f, i) => (
+            {FEATURES.map((f, i) => (
               <View
                 key={i}
                 style={[
                   styles.featureRow,
-                  i < FEATURES_PREMIUM.length - 1 && { borderBottomWidth: 1, borderBottomColor: colors.border },
+                  i < FEATURES.length - 1 && { borderBottomWidth: 1, borderBottomColor: colors.border },
                 ]}
               >
-                <View style={[styles.featureCheck, { backgroundColor: "#DCFCE7" }]}>
+                <View style={styles.featureCheck}>
                   <Ionicons name="checkmark" size={13} color="#10B981" />
                 </View>
                 <Text style={[styles.featureTxt, { color: colors.text, fontFamily: "Inter_400Regular" }]}>
-                  {f.label}
+                  {f}
                 </Text>
               </View>
             ))}
           </View>
 
-          {/* Free vs Premium side-note */}
-          <View style={[styles.comparisonNote, { backgroundColor: "#FFFBEB", borderColor: "#FDE68A" }]}>
-            <Ionicons name="information-circle" size={16} color="#F59E0B" />
-            <Text style={[styles.comparisonTxt, { color: "#92400E", fontFamily: "Inter_400Regular" }]}>
-              Free plan includes 3 Feynman sessions per day and full quiz & flashcard access.
+          {/* Free tier note */}
+          <View style={[styles.freeNote, { backgroundColor: "#FFFBEB", borderColor: "#FDE68A" }]}>
+            <Ionicons name="information-circle" size={15} color="#F59E0B" />
+            <Text style={[styles.freeNoteTxt, { color: "#92400E", fontFamily: "Inter_400Regular" }]}>
+              Free plan: 3 Feynman sessions / day · full quizzes & flashcards · leaderboard
             </Text>
           </View>
 
-          {/* CTA */}
-          <Pressable
-            style={({ pressed }) => [
-              styles.ctaBtn,
-              { backgroundColor: "#1D72E8", opacity: pressed || loading ? 0.88 : 1 },
-            ]}
-            onPress={handlePurchase}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color="#FFFFFF" size="small" />
-            ) : (
-              <>
-                <Ionicons name="flash" size={18} color="#FFFFFF" />
-                <Text style={[styles.ctaTxt, { fontFamily: "Inter_700Bold" }]}>
-                  {plan === "annual"
-                    ? `Start Premium — ${ANNUAL_PRICE}/year`
-                    : `Start Premium — ${MONTHLY_PRICE}/month`}
-                </Text>
-              </>
-            )}
-          </Pressable>
+          {/* Purchase Unavailable CTA */}
+          <View style={[styles.cta, styles.ctaDisabled]}>
+            <Ionicons name="lock-closed" size={18} color="rgba(255,255,255,0.6)" />
+            <Text style={[styles.ctaTxt, { fontFamily: "Inter_700Bold", color: "rgba(255,255,255,0.7)" }]}>
+              Purchase Unavailable
+            </Text>
+          </View>
+
+          {/* Coming soon info */}
+          <View style={[styles.comingSoonNote, { backgroundColor: "#F0F9FF", borderColor: "#BAE6FD" }]}>
+            <Ionicons name="information-circle" size={15} color="#0EA5E9" />
+            <Text style={[styles.comingSoonTxt, { color: "#0369A1", fontFamily: "Inter_400Regular" }]}>
+              In-app purchases will be available once the app is published on Google Play. All features above will unlock automatically.
+            </Text>
+          </View>
 
           {/* Legal */}
-          <Text style={[styles.legalTxt, { color: colors.textMuted, fontFamily: "Inter_400Regular" }]}>
-            {plan === "annual"
-              ? `${ANNUAL_PRICE} billed annually. Auto-renews unless cancelled 24h before the renewal date.`
-              : `${MONTHLY_PRICE} billed monthly. Cancel anytime from your Google Play account.`}
+          <Text style={[styles.legal, { color: colors.textMuted, fontFamily: "Inter_400Regular" }]}>
+            {FALLBACK[plan].legal}
           </Text>
-
-          {/* Restore */}
-          <Pressable style={styles.restoreBtn} onPress={handleRestore} disabled={loading}>
-            <Text style={[styles.restoreTxt, { color: colors.primary, fontFamily: "Inter_500Medium" }]}>
-              Already purchased? Restore
-            </Text>
-          </Pressable>
         </ScrollView>
       </View>
     </Modal>
@@ -266,77 +210,59 @@ export default function PremiumPaywallModal({ visible, onClose, onPurchaseSucces
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  heroSection: {
+  hero: {
+    backgroundColor: "#1D72E8",
     paddingTop: Platform.OS === "ios" ? 56 : 40,
     paddingHorizontal: 24,
     paddingBottom: 32,
-  },
-  closeBtn: { alignSelf: "flex-end", padding: 4, marginBottom: 8 },
-  heroContent: { alignItems: "center", gap: 10 },
-  heroIconWrap: {
-    width: 76,
-    height: 76,
-    borderRadius: 22,
-    backgroundColor: "rgba(255,255,255,0.2)",
     alignItems: "center",
-    justifyContent: "center",
+    gap: 10,
+  },
+  closeBtn: { alignSelf: "flex-end", padding: 4, marginBottom: 4 },
+  heroIconWrap: {
+    width: 76, height: 76, borderRadius: 22,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    alignItems: "center", justifyContent: "center",
   },
   heroTitle: { fontSize: 26, color: "#FFFFFF" },
-  heroSub: { fontSize: 14, color: "rgba(255,255,255,0.8)", textAlign: "center", lineHeight: 20, paddingHorizontal: 16 },
-  scrollBody: { padding: 20, gap: 14, paddingBottom: 40 },
-  sectionLabel: { fontSize: 11, letterSpacing: 1.2, marginBottom: 2 },
-  plansRow: { flexDirection: "row", gap: 12, marginBottom: 4 },
-  planCard: {
-    flex: 1,
-    borderRadius: 18,
-    padding: 18,
-    alignItems: "center",
-    gap: 4,
-    position: "relative",
+  heroSub: { fontSize: 14, color: "rgba(255,255,255,0.8)", textAlign: "center", lineHeight: 20 },
+  body: { padding: 20, gap: 14, paddingBottom: 44 },
+  label: { fontSize: 11, letterSpacing: 1.2 },
+  offeringLoader: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 12 },
+  loadingTxt: { fontSize: 13 },
+  plansCol: { gap: 10 },
+  planRow: {
+    flexDirection: "row", alignItems: "center",
+    gap: 14, padding: 16, borderRadius: 16,
   },
-  planCardFeatured: { overflow: "visible" },
-  planName: { fontSize: 14 },
-  planPrice: { fontSize: 26 },
-  planPer: { fontSize: 11, textAlign: "center" },
-  selectedDot: { width: 8, height: 8, borderRadius: 4, marginTop: 6 },
-  savingsBadge: {
-    position: "absolute",
-    top: -10,
-    backgroundColor: "#F59E0B",
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    borderRadius: 10,
+  radio: {
+    width: 20, height: 20, borderRadius: 10, borderWidth: 2,
+    alignItems: "center", justifyContent: "center",
   },
-  savingsTxt: { color: "#FFFFFF", fontSize: 11 },
-  featuresCard: { borderRadius: 16, borderWidth: 1, overflow: "hidden", marginBottom: 4 },
+  radioDot: { width: 10, height: 10, borderRadius: 5 },
+  planTitleRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+  planName: { fontSize: 15 },
+  planSub: { fontSize: 12, marginTop: 2 },
+  planPrice: { fontSize: 18 },
+  badge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 },
+  badgeTxt: { fontSize: 11 },
+  featuresCard: { borderRadius: 16, borderWidth: 1, overflow: "hidden" },
   featureRow: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 13, paddingHorizontal: 16 },
-  featureCheck: { width: 22, height: 22, borderRadius: 11, alignItems: "center", justifyContent: "center" },
+  featureCheck: { width: 22, height: 22, borderRadius: 11, backgroundColor: "#DCFCE7", alignItems: "center", justifyContent: "center" },
   featureTxt: { fontSize: 14, flex: 1 },
-  comparisonNote: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 8,
-    padding: 12,
-    borderRadius: 12,
-    borderWidth: 1,
+  freeNote: { flexDirection: "row", alignItems: "flex-start", gap: 8, padding: 12, borderRadius: 12, borderWidth: 1 },
+  freeNoteTxt: { fontSize: 12, flex: 1, lineHeight: 17 },
+  cta: {
+    flexDirection: "row", alignItems: "center", justifyContent: "center",
+    gap: 10, paddingVertical: 18, borderRadius: 16,
+    backgroundColor: "#1D72E8",
   },
-  comparisonTxt: { fontSize: 12, flex: 1, lineHeight: 17 },
-  ctaBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 10,
-    paddingVertical: 18,
-    borderRadius: 16,
-    shadowColor: "#1D72E8",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
-    marginTop: 4,
-  },
+  ctaDisabled: { backgroundColor: "#94A3B8" },
   ctaTxt: { color: "#FFFFFF", fontSize: 16 },
-  legalTxt: { fontSize: 11, textAlign: "center", lineHeight: 16 },
-  restoreBtn: { alignItems: "center", paddingVertical: 4 },
-  restoreTxt: { fontSize: 13 },
+  comingSoonNote: {
+    flexDirection: "row", alignItems: "flex-start",
+    gap: 8, padding: 12, borderRadius: 12, borderWidth: 1,
+  },
+  comingSoonTxt: { fontSize: 12, flex: 1, lineHeight: 17 },
+  legal: { fontSize: 11, textAlign: "center", lineHeight: 16 },
 });
