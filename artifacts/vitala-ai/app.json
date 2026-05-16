@@ -36,12 +36,7 @@
       "favicon": "./assets/images/icon.png"
     },
     "plugins": [
-      [
-        "expo-router",
-        {
-          "origin": "https://replit.com/"
-        }
-      ],
+      "expo-router",
       "expo-font",
       [
         "expo-notifications",
@@ -50,7 +45,8 @@
           "color": "#1D72E8",
           "defaultChannel": "streak-reminder"
         }
-      ]
+      ],
+      "react-native-purchases"
     ],
     "experiments": {
       "typedRoutes": true
