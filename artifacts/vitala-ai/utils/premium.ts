@@ -7,8 +7,11 @@ import Purchases, {
   PACKAGE_TYPE,
 } from "react-native-purchases";
 
-const REVENUECAT_ANDROID_API_KEY = "test_jKojaAuEepLTTttcOAGNRVBsHGo";
-const REVENUECAT_APPLE_API_KEY   = "YOUR_APPLE_API_KEY_PLACEHOLDER";
+// Keys come from environment variables — never hardcode in source
+const REVENUECAT_ANDROID_API_KEY =
+  process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY ?? "";
+const REVENUECAT_APPLE_API_KEY =
+  process.env.EXPO_PUBLIC_REVENUECAT_APPLE_API_KEY ?? "";
 
 export const ENTITLEMENT_ID = "vitala ai Pro";
 
@@ -17,19 +20,27 @@ let initialized = false;
 export async function initializePurchases(): Promise<void> {
   if (Platform.OS === "web") return;
   if (initialized) return;
+  const apiKey =
+    Platform.OS === "android" ? REVENUECAT_ANDROID_API_KEY : REVENUECAT_APPLE_API_KEY;
+  if (!apiKey) {
+    console.warn("[RevenueCat] API key not configured — purchases unavailable");
+    return;
+  }
   try {
     Purchases.setLogLevel(__DEV__ ? LOG_LEVEL.DEBUG : LOG_LEVEL.ERROR);
-    const apiKey =
-      Platform.OS === "android" ? REVENUECAT_ANDROID_API_KEY : REVENUECAT_APPLE_API_KEY;
     Purchases.configure({ apiKey });
     initialized = true;
-  } catch {
-    // Initialization failed — app still works, premium features locked
+  } catch (e) {
+    console.warn("[RevenueCat] Failed to initialize:", e);
   }
 }
 
+export function isPurchasesInitialized(): boolean {
+  return initialized;
+}
+
 export async function isPremiumUser(): Promise<boolean> {
-  if (Platform.OS === "web") return false;
+  if (Platform.OS === "web" || !initialized) return false;
   try {
     const info = await Purchases.getCustomerInfo();
     return isEntitlementActive(info);
@@ -51,10 +62,10 @@ export interface VitalaOffering {
 
 export async function getOffering(): Promise<VitalaOffering> {
   const empty: VitalaOffering = { monthly: null, yearly: null, lifetime: null, raw: null };
-  if (Platform.OS === "web") return empty;
+  if (Platform.OS === "web" || !initialized) return empty;
   try {
     const offerings = await Purchases.getOfferings();
-    const current   = offerings.current;
+    const current = offerings.current;
     if (!current) return empty;
 
     let monthly:  PurchasesPackage | null = null;
@@ -67,24 +78,25 @@ export async function getOffering(): Promise<VitalaOffering> {
       if (pkg.packageType === PACKAGE_TYPE.LIFETIME) lifetime = pkg;
     }
 
-    // Fallback: match by product identifier if package types aren't set
+    // Fallback: match by product identifier if package types are not set
     if (!monthly || !yearly || !lifetime) {
       for (const pkg of current.availablePackages) {
         const id = pkg.product.identifier.toLowerCase();
         if (!monthly  && id.includes("monthly"))  monthly  = pkg;
-        if (!yearly   && id.includes("yearly"))   yearly   = pkg;
+        if (!yearly   && (id.includes("yearly") || id.includes("annual"))) yearly = pkg;
         if (!lifetime && id.includes("lifetime")) lifetime = pkg;
       }
     }
 
     return { monthly, yearly, lifetime, raw: current };
-  } catch {
+  } catch (e) {
+    console.warn("[RevenueCat] getOffering failed:", e);
     return empty;
   }
 }
 
 export async function purchasePackage(pkg: PurchasesPackage): Promise<boolean> {
-  if (Platform.OS === "web") return false;
+  if (Platform.OS === "web" || !initialized) return false;
   try {
     const { customerInfo } = await Purchases.purchasePackage(pkg);
     return isEntitlementActive(customerInfo);
@@ -95,7 +107,7 @@ export async function purchasePackage(pkg: PurchasesPackage): Promise<boolean> {
 }
 
 export async function restorePurchases(): Promise<boolean> {
-  if (Platform.OS === "web") return false;
+  if (Platform.OS === "web" || !initialized) return false;
   try {
     const info = await Purchases.restorePurchases();
     return isEntitlementActive(info);
@@ -105,11 +117,29 @@ export async function restorePurchases(): Promise<boolean> {
 }
 
 export async function getCustomerInfo(): Promise<CustomerInfo | null> {
-  if (Platform.OS === "web") return null;
+  if (Platform.OS === "web" || !initialized) return null;
   try {
     return await Purchases.getCustomerInfo();
   } catch {
     return null;
+  }
+}
+
+export async function logInUser(userId: string): Promise<void> {
+  if (Platform.OS === "web" || !initialized) return;
+  try {
+    await Purchases.logIn(userId);
+  } catch (e) {
+    console.warn("[RevenueCat] logIn failed:", e);
+  }
+}
+
+export async function logOutUser(): Promise<void> {
+  if (Platform.OS === "web" || !initialized) return;
+  try {
+    await Purchases.logOut();
+  } catch (e) {
+    console.warn("[RevenueCat] logOut failed:", e);
   }
 }
 
