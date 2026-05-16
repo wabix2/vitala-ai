@@ -18,7 +18,10 @@
       "bundleIdentifier": "com.vitalaai.app",
       "buildNumber": "1",
       "infoPlist": {
-        "UIBackgroundModes": ["fetch", "remote-notification"]
+        "UIBackgroundModes": [
+          "fetch",
+          "remote-notification"
+        ]
       }
     },
     "android": {
@@ -51,6 +54,12 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "44a7b39d-05e9-48fc-a37d-42f755516253"
+      }
+    },
+    "owner": "teamsx2"
   }
 }
