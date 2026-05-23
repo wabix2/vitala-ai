@@ -52,6 +52,20 @@ export default function HomeScreen() {
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const [top3, setTop3] = useState<LeaderEntry[]>([]);
 
+  const toolAnims = useRef(TOOLS.map(() => new Animated.Value(0))).current;
+  const headerAnim = useRef(new Animated.Value(0)).current;
+  const heroAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(headerAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
+      Animated.timing(heroAnim, { toValue: 1, duration: 600, delay: 100, useNativeDriver: true }),
+      ...toolAnims.map((anim, i) =>
+        Animated.timing(anim, { toValue: 1, duration: 400, delay: 250 + i * 80, useNativeDriver: true })
+      ),
+    ]).start();
+  }, []);
+
   useEffect(() => {
     Animated.loop(
       Animated.sequence([
@@ -80,7 +94,13 @@ export default function HomeScreen() {
       showsVerticalScrollIndicator={false}
     >
       {/* Header */}
-      <View style={[styles.header, { paddingTop: topPad + 16 }]}>
+      <Animated.View
+        style={[
+          styles.header,
+          { paddingTop: topPad + 16 },
+          { opacity: headerAnim, transform: [{ translateY: headerAnim.interpolate({ inputRange: [0, 1], outputRange: [-12, 0] }) }] },
+        ]}
+      >
         <View>
           <Text style={[styles.greeting, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
             {getGreeting()}
@@ -90,39 +110,39 @@ export default function HomeScreen() {
           </Text>
         </View>
         <View style={styles.pills}>
-          <View style={[styles.pill, { backgroundColor: "#FFF7ED" }]}>
-            <Ionicons name="flame" size={14} color="#F97316" />
-            <Text style={[styles.pillTxt, { color: "#F97316", fontFamily: "Inter_600SemiBold" }]}>
+          <View style={[styles.pill, { backgroundColor: colors.streak + "15", borderColor: colors.streak + "30", borderWidth: 1 }]}>
+            <Ionicons name="flame" size={14} color={colors.streak} />
+            <Text style={[styles.pillTxt, { color: colors.streak, fontFamily: "Inter_600SemiBold" }]}>
               {user.streak}d
             </Text>
           </View>
-          <View style={[styles.pill, { backgroundColor: "#FFFBEB" }]}>
+          <View style={[styles.pill, { backgroundColor: "#F59E0B15", borderColor: "#F59E0B30", borderWidth: 1 }]}>
             <Ionicons name="star" size={14} color="#F59E0B" />
             <Text style={[styles.pillTxt, { color: "#F59E0B", fontFamily: "Inter_600SemiBold" }]}>
               {user.xp.toLocaleString()}
             </Text>
           </View>
         </View>
-      </View>
+      </Animated.View>
 
       {/* Hero Card */}
-      <View style={[styles.heroCard, { backgroundColor: colors.primary }, shadows.md]}>
+      <Animated.View
+        style={[
+          styles.heroCard,
+          { backgroundColor: colors.primary },
+          shadows.md,
+          { opacity: heroAnim, transform: [{ translateY: heroAnim.interpolate({ inputRange: [0, 1], outputRange: [16, 0] }) }] },
+        ]}
+      >
         <View style={styles.heroLeft}>
           <View style={styles.levelBadge}>
-            <Text style={[styles.levelTxt, { fontFamily: "Inter_600SemiBold" }]}>
-              Level {user.level}
-            </Text>
+            <Text style={[styles.levelTxt, { fontFamily: "Inter_600SemiBold" }]}>Level {user.level}</Text>
           </View>
           <Text style={[styles.heroTitle, { fontFamily: "Inter_700Bold" }]}>
             Keep going,{"\n"}{firstName}!
           </Text>
           <View style={styles.xpTrack}>
-            <View
-              style={[
-                styles.xpFill,
-                { width: `${Math.round(xpFraction * 100)}%` },
-              ]}
-            />
+            <View style={[styles.xpFill, { width: `${Math.round(xpFraction * 100)}%` }]} />
           </View>
           <Text style={[styles.xpLabel, { fontFamily: "Inter_400Regular" }]}>
             {user.xp} / {user.xpToNext} XP
@@ -133,13 +153,13 @@ export default function HomeScreen() {
             <Ionicons name="school" size={52} color="#FFFFFF" />
           </View>
         </Animated.View>
-      </View>
+      </Animated.View>
 
       {/* Daily Challenge */}
       <Pressable
         style={({ pressed }) => [
           styles.challengeCard,
-          { backgroundColor: "#FFFBEB", borderColor: "#FDE68A", opacity: pressed ? 0.88 : 1 },
+          { backgroundColor: colors.card, borderColor: colors.border, opacity: pressed ? 0.88 : 1 },
           shadows.sm,
         ]}
         onPress={() => {
@@ -147,7 +167,7 @@ export default function HomeScreen() {
           router.push("/(tabs)/study");
         }}
       >
-        <View style={[styles.challengeIcon, { backgroundColor: "#FEF3C7" }]}>
+        <View style={[styles.challengeIcon, { backgroundColor: "#F59E0B15" }]}>
           <Ionicons name="flash" size={20} color="#F59E0B" />
         </View>
         <View style={{ flex: 1 }}>
@@ -167,33 +187,36 @@ export default function HomeScreen() {
         Study Tools
       </Text>
       <View style={styles.toolsGrid}>
-        {TOOLS.map((t) => (
-          <Pressable
+        {TOOLS.map((t, i) => (
+          <Animated.View
             key={t.id}
-            style={({ pressed }) => [
-              styles.toolCard,
-              { backgroundColor: colors.card, borderColor: colors.border, opacity: pressed ? 0.85 : 1 },
-              shadows.sm,
+            style={[
+              { width: "47%", opacity: toolAnims[i] },
+              { transform: [{ translateY: toolAnims[i].interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] },
             ]}
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              if (t.id === "ai" || t.id === "feynman") {
-                router.push("/(tabs)/chat");
-              } else {
-                router.push("/(tabs)/study");
-              }
-            }}
           >
-            <View style={[styles.toolIcon, { backgroundColor: t.color + "15" }]}>
-              <Ionicons name={t.icon} size={22} color={t.color} />
-            </View>
-            <Text style={[styles.toolLabel, { color: colors.text, fontFamily: "Inter_600SemiBold" }]}>
-              {t.label}
-            </Text>
-            <Text style={[styles.toolSub, { color: colors.textMuted, fontFamily: "Inter_400Regular" }]}>
-              {t.sub}
-            </Text>
-          </Pressable>
+            <Pressable
+              style={({ pressed }) => [
+                styles.toolCard,
+                { backgroundColor: colors.card, borderColor: colors.border, opacity: pressed ? 0.85 : 1 },
+                shadows.sm,
+              ]}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                if (t.id === "ai" || t.id === "feynman") {
+                  router.push("/(tabs)/chat");
+                } else {
+                  router.push("/(tabs)/study");
+                }
+              }}
+            >
+              <View style={[styles.toolIcon, { backgroundColor: t.color + "15" }]}>
+                <Ionicons name={t.icon} size={22} color={t.color} />
+              </View>
+              <Text style={[styles.toolLabel, { color: colors.text, fontFamily: "Inter_600SemiBold" }]}>{t.label}</Text>
+              <Text style={[styles.toolSub, { color: colors.textMuted, fontFamily: "Inter_400Regular" }]}>{t.sub}</Text>
+            </Pressable>
+          </Animated.View>
         ))}
       </View>
 
@@ -203,9 +226,7 @@ export default function HomeScreen() {
           Top Scholars
         </Text>
         <Pressable onPress={() => router.push("/(tabs)/leaderboard")}>
-          <Text style={[styles.seeAll, { color: colors.primary, fontFamily: "Inter_500Medium" }]}>
-            See all
-          </Text>
+          <Text style={[styles.seeAll, { color: colors.primary, fontFamily: "Inter_500Medium" }]}>See all</Text>
         </Pressable>
       </View>
       <View style={[styles.leaderCard, { backgroundColor: colors.card, borderColor: colors.border }, shadows.sm]}>
@@ -237,7 +258,15 @@ export default function HomeScreen() {
                   #{s.rank}
                 </Text>
                 <Avatar name={s.name} size={32} backgroundColor={RANK_COLORS[i] + "22"} textColor={RANK_COLORS[i]} />
-                <Text style={[styles.leaderName, { color: colors.text, fontFamily: s.name === user.userName ? "Inter_700Bold" : "Inter_500Medium" }]}>
+                <Text
+                  style={[
+                    styles.leaderName,
+                    {
+                      color: colors.text,
+                      fontFamily: s.name === user.userName ? "Inter_700Bold" : "Inter_500Medium",
+                    },
+                  ]}
+                >
                   {s.name}{s.name === user.userName ? " (You)" : ""}
                 </Text>
                 <View style={styles.xpRow}>
@@ -279,7 +308,7 @@ const styles = StyleSheet.create({
   sectionRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, marginBottom: 12 },
   seeAll: { fontSize: 14 },
   toolsGrid: { flexDirection: "row", flexWrap: "wrap", gap: 12, paddingHorizontal: 20, marginBottom: 28 },
-  toolCard: { width: "47%", padding: 16, borderRadius: 16, borderWidth: 1, gap: 8 },
+  toolCard: { padding: 16, borderRadius: 16, borderWidth: 1, gap: 8 },
   toolIcon: { width: 44, height: 44, borderRadius: 12, alignItems: "center", justifyContent: "center" },
   toolLabel: { fontSize: 15 },
   toolSub: { fontSize: 12 },
