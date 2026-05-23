@@ -41,15 +41,14 @@ export default function AchievementShareModal({ achievement, userName, userLevel
     try {
       await Share.share({
         message:
-          `🏆 I just unlocked "${achievement.label}" on ${APP_NAME}!\n\n` +
-          `I'm Level ${userLevel} and crushing my study goals 🚀\n\n` +
-          `Join me and learn smarter with AI-powered studying 👇\n` +
+          `I just unlocked "${achievement.label}" on ${APP_NAME}!\n\n` +
+          `Level ${userLevel} and consistently hitting my study goals.\n\n` +
+          `${APP_NAME} — AI-powered studying that actually works.\n` +
           APP_LINK,
-        title: `I unlocked ${achievement.label} on ${APP_NAME}!`,
+        title: `${achievement.label} — ${APP_NAME}`,
         url: APP_LINK,
       });
     } catch {
-      // Fallback: open link
       Linking.openURL(APP_LINK);
     }
   };
@@ -58,14 +57,12 @@ export default function AchievementShareModal({ achievement, userName, userLevel
     <Modal visible={!!achievement} transparent animationType="fade" onRequestClose={onClose}>
       <Pressable style={styles.overlay} onPress={onClose}>
         <Pressable style={[styles.sheet, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          {/* Close */}
           <Pressable style={styles.closeBtn} onPress={onClose}>
             <Ionicons name="close" size={20} color={colors.textMuted} />
           </Pressable>
 
-          {/* The "card" that represents what would be shared */}
+          {/* Share card */}
           <View style={[styles.card, { backgroundColor: colors.background, borderColor: achievement.color + "44" }]}>
-            {/* Card header with branding */}
             <View style={[styles.cardBrand, { borderBottomColor: achievement.color + "33" }]}>
               <View style={[styles.brandDot, { backgroundColor: achievement.color }]} />
               <Text style={[styles.brandName, { color: achievement.color, fontFamily: "Inter_700Bold" }]}>
@@ -73,12 +70,10 @@ export default function AchievementShareModal({ achievement, userName, userLevel
               </Text>
             </View>
 
-            {/* Achievement icon */}
             <View style={[styles.cardIconWrap, { backgroundColor: achievement.color + "22" }]}>
               <Ionicons name={achievement.icon as any} size={48} color={achievement.color} />
             </View>
 
-            {/* Badge glow ring */}
             <View style={[styles.glowRing, { borderColor: achievement.color + "44" }]} />
 
             <Text style={[styles.cardUnlocked, { color: colors.textMuted, fontFamily: "Inter_500Medium" }]}>
@@ -93,7 +88,6 @@ export default function AchievementShareModal({ achievement, userName, userLevel
               </Text>
             )}
 
-            {/* User info */}
             <View style={[styles.cardUser, { borderTopColor: achievement.color + "33" }]}>
               <View style={[styles.userAvatar, { backgroundColor: achievement.color + "33" }]}>
                 <Text style={[styles.userAvatarTxt, { color: achievement.color, fontFamily: "Inter_700Bold" }]}>
@@ -115,12 +109,10 @@ export default function AchievementShareModal({ achievement, userName, userLevel
             </View>
           </View>
 
-          {/* Share text */}
           <Text style={[styles.shareHint, { color: colors.textMuted, fontFamily: "Inter_400Regular" }]}>
             Share your achievement and invite friends to study smarter
           </Text>
 
-          {/* Share button */}
           <Pressable
             style={({ pressed }) => [
               styles.shareBtn,
@@ -130,11 +122,10 @@ export default function AchievementShareModal({ achievement, userName, userLevel
           >
             <Ionicons name="share-social" size={20} color="#fff" />
             <Text style={[styles.shareBtnTxt, { fontFamily: "Inter_700Bold" }]}>
-              Share to Social Media
+              Share Achievement
             </Text>
           </Pressable>
 
-          {/* Copy link */}
           <Pressable
             style={[styles.copyBtn, { borderColor: colors.border }]}
             onPress={() => {
@@ -168,10 +159,7 @@ const styles = StyleSheet.create({
     gap: 16,
     paddingBottom: Platform.OS === "ios" ? 40 : 24,
   },
-  closeBtn: {
-    alignSelf: "flex-end",
-    padding: 4,
-  },
+  closeBtn: { alignSelf: "flex-end", padding: 4 },
   card: {
     borderRadius: 20,
     borderWidth: 1.5,
