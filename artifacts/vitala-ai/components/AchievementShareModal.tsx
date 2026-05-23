@@ -1,4 +1,5 @@
 import * as Haptics from "expo-haptics";
+import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
 import {
   Linking,
@@ -41,11 +42,10 @@ export default function AchievementShareModal({ achievement, userName, userLevel
     try {
       await Share.share({
         message:
-          `I just unlocked "${achievement.label}" on ${APP_NAME}!\n\n` +
-          `Level ${userLevel} and consistently hitting my study goals.\n\n` +
-          `${APP_NAME} — AI-powered studying that actually works.\n` +
-          APP_LINK,
-        title: `${achievement.label} — ${APP_NAME}`,
+          `I unlocked "${achievement.label}" on ${APP_NAME}.\n\n` +
+          `Level ${userLevel}. Better study habits, one session at a time.\n\n` +
+          `Study smarter with ${APP_NAME}: ${APP_LINK}`,
+        title: `${achievement.label} on ${APP_NAME}`,
         url: APP_LINK,
       });
     } catch {
@@ -57,73 +57,79 @@ export default function AchievementShareModal({ achievement, userName, userLevel
     <Modal visible={!!achievement} transparent animationType="fade" onRequestClose={onClose}>
       <Pressable style={styles.overlay} onPress={onClose}>
         <Pressable style={[styles.sheet, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Pressable style={styles.closeBtn} onPress={onClose}>
-            <Ionicons name="close" size={20} color={colors.textMuted} />
-          </Pressable>
-
-          {/* Share card */}
-          <View style={[styles.card, { backgroundColor: colors.background, borderColor: achievement.color + "44" }]}>
-            <View style={[styles.cardBrand, { borderBottomColor: achievement.color + "33" }]}>
-              <View style={[styles.brandDot, { backgroundColor: achievement.color }]} />
-              <Text style={[styles.brandName, { color: achievement.color, fontFamily: "Inter_700Bold" }]}>
-                {APP_NAME}
+          <View style={styles.sheetHeader}>
+            <View>
+              <Text style={[styles.sheetTitle, { color: colors.text, fontFamily: "Inter_700Bold" }]}>
+                Share achievement
+              </Text>
+              <Text style={[styles.sheetSub, { color: colors.textMuted, fontFamily: "Inter_400Regular" }]}>
+                A polished progress card for your story
               </Text>
             </View>
-
-            <View style={[styles.cardIconWrap, { backgroundColor: achievement.color + "22" }]}>
-              <Ionicons name={achievement.icon as any} size={48} color={achievement.color} />
-            </View>
-
-            <View style={[styles.glowRing, { borderColor: achievement.color + "44" }]} />
-
-            <Text style={[styles.cardUnlocked, { color: colors.textMuted, fontFamily: "Inter_500Medium" }]}>
-              ACHIEVEMENT UNLOCKED
-            </Text>
-            <Text style={[styles.cardTitle, { color: colors.text, fontFamily: "Inter_700Bold" }]}>
-              {achievement.label}
-            </Text>
-            {achievement.description && (
-              <Text style={[styles.cardDesc, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
-                {achievement.description}
-              </Text>
-            )}
-
-            <View style={[styles.cardUser, { borderTopColor: achievement.color + "33" }]}>
-              <View style={[styles.userAvatar, { backgroundColor: achievement.color + "33" }]}>
-                <Text style={[styles.userAvatarTxt, { color: achievement.color, fontFamily: "Inter_700Bold" }]}>
-                  {userName.charAt(0).toUpperCase()}
-                </Text>
-              </View>
-              <View>
-                <Text style={[styles.cardUserName, { color: colors.text, fontFamily: "Inter_600SemiBold" }]}>
-                  {userName}
-                </Text>
-                <Text style={[styles.cardLevel, { color: colors.textMuted, fontFamily: "Inter_400Regular" }]}>
-                  Level {userLevel} Scholar
-                </Text>
-              </View>
-              <View style={{ flex: 1 }} />
-              <Text style={[styles.cardLink, { color: achievement.color, fontFamily: "Inter_500Medium" }]}>
-                vitala-ai.replit.app
-              </Text>
-            </View>
+            <Pressable style={styles.closeBtn} onPress={onClose}>
+              <Ionicons name="close" size={20} color={colors.textMuted} />
+            </Pressable>
           </View>
 
-          <Text style={[styles.shareHint, { color: colors.textMuted, fontFamily: "Inter_400Regular" }]}>
-            Share your achievement and invite friends to study smarter
-          </Text>
+          <LinearGradient
+            colors={["#0F172A", "#1E3A8A", achievement.color]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.shareCard}
+          >
+            <View style={styles.brandRow}>
+              <View style={styles.brandMark}>
+                <Ionicons name="school" size={15} color="#0F172A" />
+              </View>
+              <Text style={[styles.brandName, { fontFamily: "Inter_700Bold" }]}>{APP_NAME}</Text>
+              <View style={styles.brandLine} />
+              <Text style={[styles.cardMeta, { fontFamily: "Inter_500Medium" }]}>STUDY PROGRESS</Text>
+            </View>
+
+            <View style={styles.cardCenter}>
+              <View style={styles.cardIconHalo}>
+                <View style={styles.cardIconWrap}>
+                  <Ionicons name={achievement.icon as any} size={42} color="#FFFFFF" />
+                </View>
+              </View>
+              <Text style={[styles.cardEyebrow, { fontFamily: "Inter_700Bold" }]}>ACHIEVEMENT UNLOCKED</Text>
+              <Text style={[styles.cardTitle, { fontFamily: "Inter_700Bold" }]}>{achievement.label}</Text>
+              {!!achievement.description && (
+                <Text style={[styles.cardDesc, { fontFamily: "Inter_400Regular" }]}>
+                  {achievement.description}
+                </Text>
+              )}
+            </View>
+
+            <View style={styles.metricsRow}>
+              <View style={styles.metric}>
+                <Text style={[styles.metricValue, { fontFamily: "Inter_700Bold" }]}>L{userLevel}</Text>
+                <Text style={[styles.metricLabel, { fontFamily: "Inter_500Medium" }]}>Level</Text>
+              </View>
+              <View style={styles.metricDivider} />
+              <View style={styles.userBlock}>
+                <View style={styles.userAvatar}>
+                  <Text style={[styles.userAvatarTxt, { fontFamily: "Inter_700Bold" }]}>
+                    {userName.charAt(0).toUpperCase()}
+                  </Text>
+                </View>
+                <View>
+                  <Text style={[styles.cardUserName, { fontFamily: "Inter_700Bold" }]}>{userName}</Text>
+                  <Text style={[styles.cardLink, { fontFamily: "Inter_500Medium" }]}>vitala-ai.replit.app</Text>
+                </View>
+              </View>
+            </View>
+          </LinearGradient>
 
           <Pressable
             style={({ pressed }) => [
               styles.shareBtn,
-              { backgroundColor: achievement.color, opacity: pressed ? 0.85 : 1 },
+              { backgroundColor: colors.primary, opacity: pressed ? 0.88 : 1 },
             ]}
             onPress={handleShare}
           >
-            <Ionicons name="share-social" size={20} color="#fff" />
-            <Text style={[styles.shareBtnTxt, { fontFamily: "Inter_700Bold" }]}>
-              Share Achievement
-            </Text>
+            <Ionicons name="share-social" size={19} color="#fff" />
+            <Text style={[styles.shareBtnTxt, { fontFamily: "Inter_700Bold" }]}>Share card</Text>
           </Pressable>
 
           <Pressable
@@ -135,7 +141,7 @@ export default function AchievementShareModal({ achievement, userName, userLevel
           >
             <Ionicons name="link-outline" size={16} color={colors.textSecondary} />
             <Text style={[styles.copyBtnTxt, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
-              {APP_LINK}
+              Open public link
             </Text>
           </Pressable>
         </Pressable>
@@ -147,7 +153,7 @@ export default function AchievementShareModal({ achievement, userName, userLevel
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "#00000088",
+    backgroundColor: "#020617AA",
     justifyContent: "flex-end",
   },
   sheet: {
@@ -155,81 +161,93 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 28,
     borderWidth: 1,
     borderBottomWidth: 0,
-    padding: 24,
-    gap: 16,
-    paddingBottom: Platform.OS === "ios" ? 40 : 24,
+    padding: 20,
+    gap: 14,
+    paddingBottom: Platform.OS === "ios" ? 38 : 22,
   },
-  closeBtn: { alignSelf: "flex-end", padding: 4 },
-  card: {
-    borderRadius: 20,
-    borderWidth: 1.5,
-    overflow: "hidden",
-    alignItems: "center",
-    gap: 10,
-    paddingBottom: 0,
-  },
-  cardBrand: {
+  sheetHeader: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    width: "100%",
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderBottomWidth: 1,
+    justifyContent: "space-between",
   },
-  brandDot: { width: 8, height: 8, borderRadius: 4 },
-  brandName: { fontSize: 13, letterSpacing: 0.5 },
-  cardIconWrap: {
-    width: 90,
-    height: 90,
+  sheetTitle: { fontSize: 18 },
+  sheetSub: { fontSize: 12, marginTop: 3 },
+  closeBtn: { padding: 6 },
+  shareCard: {
+    minHeight: 420,
     borderRadius: 26,
+    padding: 22,
+    overflow: "hidden",
+    justifyContent: "space-between",
+  },
+  brandRow: { flexDirection: "row", alignItems: "center", gap: 9 },
+  brandMark: {
+    width: 28,
+    height: 28,
+    borderRadius: 9,
+    backgroundColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 20,
-    zIndex: 1,
   },
-  glowRing: {
-    position: "absolute",
-    top: 48,
-    width: 110,
-    height: 110,
-    borderRadius: 55,
-    borderWidth: 12,
+  brandName: { color: "#FFFFFF", fontSize: 14 },
+  brandLine: { flex: 1, height: 1, backgroundColor: "rgba(255,255,255,0.22)" },
+  cardMeta: { color: "rgba(255,255,255,0.72)", fontSize: 10, letterSpacing: 1.4 },
+  cardCenter: { alignItems: "center", gap: 10 },
+  cardIconHalo: {
+    width: 116,
+    height: 116,
+    borderRadius: 38,
+    backgroundColor: "rgba(255,255,255,0.12)",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.22)",
   },
-  cardUnlocked: { fontSize: 11, letterSpacing: 2, marginTop: 4 },
-  cardTitle: { fontSize: 24, textAlign: "center", paddingHorizontal: 20 },
-  cardDesc: { fontSize: 13, textAlign: "center", paddingHorizontal: 24, lineHeight: 19 },
-  cardUser: {
+  cardIconWrap: {
+    width: 84,
+    height: 84,
+    borderRadius: 28,
+    backgroundColor: "rgba(255,255,255,0.18)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  cardEyebrow: { color: "rgba(255,255,255,0.72)", fontSize: 11, letterSpacing: 1.8, marginTop: 4 },
+  cardTitle: { color: "#FFFFFF", fontSize: 32, lineHeight: 38, textAlign: "center" },
+  cardDesc: { color: "rgba(255,255,255,0.78)", fontSize: 14, lineHeight: 20, textAlign: "center" },
+  metricsRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
-    width: "100%",
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderTopWidth: 1,
-    marginTop: 8,
+    borderRadius: 20,
+    padding: 14,
+    backgroundColor: "rgba(255,255,255,0.13)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.18)",
   },
+  metric: { width: 62 },
+  metricValue: { color: "#FFFFFF", fontSize: 22 },
+  metricLabel: { color: "rgba(255,255,255,0.65)", fontSize: 11, marginTop: 1 },
+  metricDivider: { width: 1, height: 34, backgroundColor: "rgba(255,255,255,0.22)", marginRight: 14 },
+  userBlock: { flexDirection: "row", alignItems: "center", gap: 10, flex: 1 },
   userAvatar: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 40,
+    height: 40,
+    borderRadius: 14,
+    backgroundColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
   },
-  userAvatarTxt: { fontSize: 14 },
-  cardUserName: { fontSize: 14 },
-  cardLevel: { fontSize: 11, marginTop: 1 },
-  cardLink: { fontSize: 11 },
-  shareHint: { fontSize: 13, textAlign: "center", lineHeight: 18 },
+  userAvatarTxt: { color: "#0F172A", fontSize: 15 },
+  cardUserName: { color: "#FFFFFF", fontSize: 14 },
+  cardLink: { color: "rgba(255,255,255,0.62)", fontSize: 11, marginTop: 2 },
   shareBtn: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 10,
+    gap: 9,
     paddingVertical: 16,
     borderRadius: 18,
   },
-  shareBtnTxt: { color: "#fff", fontSize: 16 },
+  shareBtnTxt: { color: "#FFFFFF", fontSize: 16 },
   copyBtn: {
     flexDirection: "row",
     alignItems: "center",

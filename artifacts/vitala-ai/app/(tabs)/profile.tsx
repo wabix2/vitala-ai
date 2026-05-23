@@ -1,7 +1,7 @@
 import * as Haptics from "expo-haptics";
 import React, { useEffect, useState } from "react";
 import {
-  Alert,
+  ActivityIndicator,
   Platform,
   Pressable,
   ScrollView,
@@ -133,7 +133,7 @@ export default function ProfileScreen() {
           ))}
         </View>
 
-        {/* Upgrade to Premium — only shown when not premium */}
+        {/* Upgrade to Premium - only shown when not premium */}
         {!isPremium && (
           <View style={[styles.upgradeCard, { backgroundColor: "#1D72E8" }, shadows.md]}>
             <View style={styles.upgradeLeft}>

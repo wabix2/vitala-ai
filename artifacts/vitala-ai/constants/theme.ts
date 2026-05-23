@@ -2,7 +2,7 @@ export const palette = {
   blue50: "#EFF6FF",
   blue100: "#DBEAFE",
   blue500: "#3B82F6",
-  blue600: "#1D72E8",
+  blue600: "#2563EB",
   blue700: "#1D4ED8",
 
   teal400: "#2DD4BF",
@@ -21,8 +21,8 @@ export const palette = {
   orange400: "#FB923C",
   orange500: "#F97316",
 
-  gray50: "#F8FAFC",
-  gray100: "#F1F5F9",
+  gray50: "#F6F8FB",
+  gray100: "#EEF2F7",
   gray200: "#E2E8F0",
   gray300: "#CBD5E1",
   gray400: "#94A3B8",
@@ -102,5 +102,12 @@ export const shadows = {
     shadowOpacity: 0.12,
     shadowRadius: 16,
     elevation: 8,
+  },
+  premium: {
+    shadowColor: "#2563EB",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.16,
+    shadowRadius: 24,
+    elevation: 10,
   },
 };

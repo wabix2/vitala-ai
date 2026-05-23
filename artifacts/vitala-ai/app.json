@@ -11,7 +11,7 @@
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "cover",
-      "backgroundColor": "#1D72E8"
+      "backgroundColor": "#0F172A"
     },
     "ios": {
       "supportsTablet": false,
@@ -29,7 +29,7 @@
       "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#1D72E8"
+        "backgroundColor": "#0F172A"
       }
     },
     "web": {
@@ -42,11 +42,10 @@
         "expo-notifications",
         {
           "icon": "./assets/images/icon.png",
-          "color": "#1D72E8",
+          "color": "#2563EB",
           "defaultChannel": "streak-reminder"
         }
-      ],
-      "react-native-purchases"
+      ]
     ],
     "experiments": {
       "typedRoutes": true

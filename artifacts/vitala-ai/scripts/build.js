@@ -139,15 +139,17 @@ async function startMetro(expoPublicDomain, expoPublicReplId) {
   const env = {
     ...process.env,
     EXPO_PUBLIC_DOMAIN: expoPublicDomain,
-    EXPO_PUBLIC_REPL_ID: expoPublicReplId,
   };
 
   if (expoPublicReplId) {
     console.log(`Setting EXPO_PUBLIC_REPL_ID=${expoPublicReplId}`);
+    env.EXPO_PUBLIC_REPL_ID = expoPublicReplId;
   }
 
+  const pnpmCommand = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
+
   metroProcess = spawn(
-    "pnpm",
+    pnpmCommand,
     [
       "exec",
       "expo",
@@ -161,6 +163,7 @@ async function startMetro(expoPublicDomain, expoPublicReplId) {
       detached: false,
       cwd: projectRoot,
       env,
+      shell: process.platform === "win32",
     },
   );
 
@@ -287,8 +290,8 @@ async function downloadBundlesAndManifests(timestamp) {
   console.log("This may take several minutes for production builds...");
 
   try {
-    // Bundles are sequential — Metro can't handle both platforms simultaneously
-    // without stalling. Manifests are cheap and run in parallel after.
+    // Bundles are sequential because Metro can stall when both platforms build at once.
+    // Manifests are cheap and run in parallel after.
     await downloadBundle("ios", timestamp);
     await downloadBundle("android", timestamp);
 

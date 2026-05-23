@@ -9,6 +9,7 @@ const CHANNEL_ID = "streak-reminder";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
+    shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
     shouldShowBanner: true,
@@ -17,11 +18,11 @@ Notifications.setNotificationHandler({
 });
 
 const MESSAGES = [
-  { title: "Don't break your streak!", body: "Just 5 minutes of studying keeps your streak alive." },
-  { title: "Time to level up!", body: "Your leaderboard rivals are studying right now. Keep up!" },
-  { title: "Your brain is waiting.", body: "It wants a quiz. Open Vitala AI and feed it!" },
-  { title: "Streak on the line!", body: "Study something today to protect your daily streak." },
-  { title: "Knowledge waits for no one.", body: "Tap to continue your learning journey in Vitala AI." },
+  { title: "Keep your streak moving", body: "A short session today keeps the habit alive." },
+  { title: "Ready for one focused win?", body: "Open Vitala AI and make one concept clearer." },
+  { title: "Your next level is closer", body: "A quiz or Feynman session can move you forward." },
+  { title: "Study momentum matters", body: "Protect your daily rhythm with a quick review." },
+  { title: "Five minutes is enough", body: "Start small and leave with one stronger idea." },
 ];
 
 async function setupAndroidChannel() {
@@ -30,7 +31,7 @@ async function setupAndroidChannel() {
       name: "Daily Streak Reminder",
       importance: Notifications.AndroidImportance.HIGH,
       vibrationPattern: [0, 250, 250, 250],
-      lightColor: "#1D72E8",
+      lightColor: "#2563EB",
     });
   }
 }

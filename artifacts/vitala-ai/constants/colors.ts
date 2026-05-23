@@ -1,77 +1,85 @@
 const light = {
   text: "#111827",
-  tint: "#1D72E8",
+  tint: "#2563EB",
 
-  background: "#F8FAFC",
+  background: "#F6F8FB",
   foreground: "#111827",
 
   card: "#FFFFFF",
   cardForeground: "#111827",
-  cardBorder: "#E2E8F0",
+  cardBorder: "#E5E7EB",
 
-  primary: "#1D72E8",
+  primary: "#2563EB",
   primaryForeground: "#FFFFFF",
 
-  secondary: "#0EA5E9",
+  secondary: "#0891B2",
   secondaryForeground: "#FFFFFF",
 
-  muted: "#F1F5F9",
+  muted: "#EEF2F7",
   mutedForeground: "#64748B",
 
-  accent: "#F59E0B",
+  accent: "#D97706",
   accentForeground: "#111827",
 
-  destructive: "#EF4444",
+  destructive: "#DC2626",
   destructiveForeground: "#FFFFFF",
 
-  border: "#E2E8F0",
+  border: "#E5E7EB",
   input: "#FFFFFF",
 
-  textSecondary: "#64748B",
+  textSecondary: "#4B5563",
   textMuted: "#94A3B8",
-  streak: "#F97316",
-  success: "#10B981",
+  streak: "#EA580C",
+  success: "#059669",
+  surface: "#F9FAFB",
+  elevated: "#FFFFFF",
+  mentor: "#0F766E",
+  focus: "#7C3AED",
 };
 
 const dark = {
-  text: "#F1F5F9",
+  text: "#F8FAFC",
   tint: "#60A5FA",
 
-  background: "#0F172A",
-  foreground: "#F1F5F9",
+  background: "#0B1120",
+  foreground: "#F8FAFC",
 
-  card: "#1E293B",
-  cardForeground: "#F1F5F9",
-  cardBorder: "#334155",
+  card: "#111827",
+  cardForeground: "#F8FAFC",
+  cardBorder: "#1F2937",
 
-  primary: "#3B82F6",
-  primaryForeground: "#FFFFFF",
+  primary: "#60A5FA",
+  primaryForeground: "#08111F",
 
-  secondary: "#38BDF8",
-  secondaryForeground: "#FFFFFF",
+  secondary: "#22D3EE",
+  secondaryForeground: "#08111F",
 
-  muted: "#1E293B",
-  mutedForeground: "#94A3B8",
+  muted: "#172033",
+  mutedForeground: "#A5B4C8",
 
-  accent: "#F59E0B",
-  accentForeground: "#0F172A",
+  accent: "#FBBF24",
+  accentForeground: "#111827",
 
-  destructive: "#EF4444",
-  destructiveForeground: "#FFFFFF",
+  destructive: "#F87171",
+  destructiveForeground: "#111827",
 
-  border: "#334155",
-  input: "#1E293B",
+  border: "#263449",
+  input: "#111827",
 
-  textSecondary: "#94A3B8",
-  textMuted: "#64748B",
+  textSecondary: "#CBD5E1",
+  textMuted: "#94A3B8",
   streak: "#FB923C",
   success: "#34D399",
+  surface: "#0F172A",
+  elevated: "#111827",
+  mentor: "#2DD4BF",
+  focus: "#A78BFA",
 };
 
 const colors = {
   light,
   dark,
-  radius: 14,
+  radius: 16,
 };
 
 export default colors;
