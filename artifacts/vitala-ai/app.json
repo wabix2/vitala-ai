@@ -50,11 +50,11 @@
     "experiments": {
       "typedRoutes": true
     },
+    "owner": "wabix2",
     "extra": {
       "eas": {
-        "projectId": "44a7b39d-05e9-48fc-a37d-42f755516253"
+        "projectId": "c505a9fa-2e8b-4df0-bfc1-87981fe6b6da"
       }
-    },
-    "owner": "teamsx2"
+    }
   }
 }
