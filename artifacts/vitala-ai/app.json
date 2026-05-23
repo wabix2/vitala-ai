@@ -11,7 +11,7 @@
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "cover",
-      "backgroundColor": "#0F172A"
+      "backgroundColor": "#1D72E8"
     },
     "ios": {
       "supportsTablet": false,
@@ -29,7 +29,7 @@
       "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#0F172A"
+        "backgroundColor": "#1D72E8"
       }
     },
     "web": {
@@ -42,7 +42,7 @@
         "expo-notifications",
         {
           "icon": "./assets/images/icon.png",
-          "color": "#2563EB",
+          "color": "#1D72E8",
           "defaultChannel": "streak-reminder"
         }
       ]
