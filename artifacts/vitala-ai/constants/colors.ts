@@ -1,4 +1,4 @@
-const vitala = {
+const light = {
   text: "#111827",
   tint: "#1D72E8",
 
@@ -33,9 +33,44 @@ const vitala = {
   success: "#10B981",
 };
 
+const dark = {
+  text: "#F1F5F9",
+  tint: "#60A5FA",
+
+  background: "#0F172A",
+  foreground: "#F1F5F9",
+
+  card: "#1E293B",
+  cardForeground: "#F1F5F9",
+  cardBorder: "#334155",
+
+  primary: "#3B82F6",
+  primaryForeground: "#FFFFFF",
+
+  secondary: "#38BDF8",
+  secondaryForeground: "#FFFFFF",
+
+  muted: "#1E293B",
+  mutedForeground: "#94A3B8",
+
+  accent: "#F59E0B",
+  accentForeground: "#0F172A",
+
+  destructive: "#EF4444",
+  destructiveForeground: "#FFFFFF",
+
+  border: "#334155",
+  input: "#1E293B",
+
+  textSecondary: "#94A3B8",
+  textMuted: "#64748B",
+  streak: "#FB923C",
+  success: "#34D399",
+};
+
 const colors = {
-  light: vitala,
-  dark: vitala,
+  light,
+  dark,
   radius: 14,
 };
 
