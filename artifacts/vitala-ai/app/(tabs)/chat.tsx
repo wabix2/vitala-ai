@@ -1,6 +1,7 @@
 import * as Haptics from "expo-haptics";
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
+  Animated,
   FlatList,
   Platform,
   Pressable,
@@ -42,6 +43,56 @@ const API_BASE = process.env.EXPO_PUBLIC_DOMAIN
 function genId() {
   return Date.now().toString() + Math.random().toString(36).slice(2, 9);
 }
+
+function TypingDots() {
+  const dot1 = useRef(new Animated.Value(0)).current;
+  const dot2 = useRef(new Animated.Value(0)).current;
+  const dot3 = useRef(new Animated.Value(0)).current;
+  const colors = useColors();
+
+  useEffect(() => {
+    const animate = (dot: Animated.Value, delay: number) =>
+      Animated.loop(
+        Animated.sequence([
+          Animated.delay(delay),
+          Animated.timing(dot, { toValue: 1, duration: 300, useNativeDriver: true }),
+          Animated.timing(dot, { toValue: 0, duration: 300, useNativeDriver: true }),
+          Animated.delay(600),
+        ])
+      );
+    const a1 = animate(dot1, 0);
+    const a2 = animate(dot2, 200);
+    const a3 = animate(dot3, 400);
+    a1.start();
+    a2.start();
+    a3.start();
+    return () => {
+      a1.stop();
+      a2.stop();
+      a3.stop();
+    };
+  }, [dot1, dot2, dot3]);
+
+  return (
+    <View style={typingStyles.wrap}>
+      {[dot1, dot2, dot3].map((dot, i) => (
+        <Animated.View
+          key={i}
+          style={[
+            typingStyles.dot,
+            { backgroundColor: colors.textMuted },
+            { opacity: dot, transform: [{ translateY: dot.interpolate({ inputRange: [0, 1], outputRange: [0, -4] }) }] },
+          ]}
+        />
+      ))}
+    </View>
+  );
+}
+
+const typingStyles = StyleSheet.create({
+  wrap: { flexDirection: "row", gap: 4, alignItems: "center", paddingVertical: 6, paddingHorizontal: 4 },
+  dot: { width: 7, height: 7, borderRadius: 3.5 },
+});
 
 export default function ChatScreen() {
   const colors = useColors();
@@ -154,18 +205,10 @@ export default function ChatScreen() {
         keyboardVerticalOffset={0}
       >
         {/* Header */}
-        <View
-          style={[
-            styles.header,
-            { paddingTop: topPad + 16, borderBottomColor: colors.border },
-          ]}
-        >
+        <View style={[styles.header, { paddingTop: topPad + 16, borderBottomColor: colors.border }]}>
           <View style={styles.headerLeft}>
             {mode === "feynman" && topic ? (
-              <Pressable
-                onPress={() => { setTopic(null); setMessages([]); }}
-                style={{ marginRight: 12 }}
-              >
+              <Pressable onPress={() => { setTopic(null); setMessages([]); }} style={{ marginRight: 12 }}>
                 <Ionicons name="arrow-back" size={22} color={colors.text} />
               </Pressable>
             ) : null}
@@ -173,9 +216,7 @@ export default function ChatScreen() {
               {mode === "feynman" && topic ? topic : "Chat"}
             </Text>
           </View>
-          <View
-            style={[styles.modeSwitcher, { backgroundColor: colors.card, borderColor: colors.border }]}
-          >
+          <View style={[styles.modeSwitcher, { backgroundColor: colors.muted, borderColor: colors.border }]}>
             {(["ai", "feynman"] as Mode[]).map((m) => (
               <Pressable
                 key={m}
@@ -210,14 +251,12 @@ export default function ChatScreen() {
                 <Text style={[styles.feynmanTitle, { color: colors.text, fontFamily: "Inter_700Bold" }]}>
                   Feynman Technique
                 </Text>
-                <Text
-                  style={[styles.feynmanSub, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}
-                >
+                <Text style={[styles.feynmanSub, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
                   Explain a concept to the AI. If you can teach it, you truly know it.
                 </Text>
                 {feynmanLocked ? (
                   <Pressable
-                    style={[styles.lockBanner, { backgroundColor: "#EFF6FF", borderColor: "#BFDBFE" }]}
+                    style={[styles.lockBanner, { backgroundColor: colors.muted, borderColor: colors.border }]}
                     onPress={() => {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                       setPaywallVisible(true);
@@ -233,19 +272,15 @@ export default function ChatScreen() {
                       </Text>
                     </View>
                     <View style={[styles.upgradePill, { backgroundColor: colors.primary }]}>
-                      <Text style={[styles.upgradePillTxt, { fontFamily: "Inter_600SemiBold" }]}>
-                        Upgrade
-                      </Text>
+                      <Text style={[styles.upgradePillTxt, { fontFamily: "Inter_600SemiBold" }]}>Upgrade</Text>
                     </View>
                   </Pressable>
                 ) : (
-                  <Text style={[styles.sessionsLeft, { color: "#F59E0B", fontFamily: "Inter_500Medium" }]}>
+                  <Text style={[styles.sessionsLeft, { color: colors.accent, fontFamily: "Inter_500Medium" }]}>
                     {feynmanLeft} of {FREE_LIMIT} sessions remaining today
                   </Text>
                 )}
-                <Text
-                  style={[styles.topicsLabel, { color: colors.textMuted, fontFamily: "Inter_500Medium" }]}
-                >
+                <Text style={[styles.topicsLabel, { color: colors.textMuted, fontFamily: "Inter_500Medium" }]}>
                   CHOOSE A TOPIC
                 </Text>
               </View>
@@ -263,9 +298,7 @@ export default function ChatScreen() {
                 onPress={() => !feynmanLocked && startFeynman(item)}
                 disabled={feynmanLocked}
               >
-                <Text style={[styles.topicTxt, { color: colors.text, fontFamily: "Inter_500Medium" }]}>
-                  {item}
-                </Text>
+                <Text style={[styles.topicTxt, { color: colors.text, fontFamily: "Inter_500Medium" }]}>{item}</Text>
                 <Ionicons name="chevron-forward" size={14} color={colors.textMuted} />
               </Pressable>
             )}
@@ -288,15 +321,8 @@ export default function ChatScreen() {
                     <View style={[styles.aiIcon, { backgroundColor: colors.primary + "20" }]}>
                       <Ionicons name="bulb" size={14} color={colors.primary} />
                     </View>
-                    <View
-                      style={[
-                        styles.bubble,
-                        { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
-                      ]}
-                    >
-                      <Text style={[styles.bubbleTxt, { color: colors.textMuted, fontFamily: "Inter_400Regular" }]}>
-                        Thinking...
-                      </Text>
+                    <View style={[styles.bubble, { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border }]}>
+                      <TypingDots />
                     </View>
                   </View>
                 ) : null
@@ -304,11 +330,16 @@ export default function ChatScreen() {
               ListEmptyComponent={
                 !typing ? (
                   <View style={styles.emptyChat}>
-                    <Ionicons name="chatbubbles-outline" size={40} color={colors.textMuted} />
+                    <View style={[styles.emptyIcon, { backgroundColor: colors.muted }]}>
+                      <Ionicons name="chatbubbles-outline" size={32} color={colors.textMuted} />
+                    </View>
+                    <Text style={[styles.emptyChatTitle, { color: colors.text, fontFamily: "Inter_600SemiBold" }]}>
+                      {mode === "ai" ? "Ask Vitala anything" : "Pick a topic to start"}
+                    </Text>
                     <Text style={[styles.emptyChatTxt, { color: colors.textMuted, fontFamily: "Inter_400Regular" }]}>
                       {mode === "ai"
-                        ? "Ask me anything about your studies"
-                        : "Start explaining a topic to the AI"}
+                        ? "Biology, Math, History — any subject"
+                        : "Choose a topic above and explain it to the AI"}
                     </Text>
                   </View>
                 ) : null
@@ -316,12 +347,7 @@ export default function ChatScreen() {
             />
 
             {/* Input bar */}
-            <View
-              style={[
-                styles.inputBar,
-                { borderTopColor: colors.border, paddingBottom: botPad + 12 },
-              ]}
-            >
+            <View style={[styles.inputBar, { borderTopColor: colors.border, paddingBottom: botPad + 12 }]}>
               <TextInput
                 ref={inputRef}
                 style={[
@@ -357,10 +383,7 @@ export default function ChatScreen() {
         )}
       </KeyboardAvoidingView>
 
-      <PremiumPaywallModal
-        visible={paywallVisible}
-        onClose={() => setPaywallVisible(false)}
-      />
+      <PremiumPaywallModal visible={paywallVisible} onClose={() => setPaywallVisible(false)} />
     </>
   );
 }
@@ -376,8 +399,8 @@ const styles = StyleSheet.create({
   },
   headerLeft: { flexDirection: "row", alignItems: "center" },
   headerTitle: { fontSize: 20 },
-  modeSwitcher: { flexDirection: "row", borderRadius: 12, borderWidth: 1, overflow: "hidden" },
-  modeTab: { paddingHorizontal: 14, paddingVertical: 7 },
+  modeSwitcher: { flexDirection: "row", borderRadius: 12, borderWidth: 1, overflow: "hidden", padding: 3, gap: 3 },
+  modeTab: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 9 },
   modeTxt: { fontSize: 13 },
   feynmanIntro: { alignItems: "center", paddingVertical: 28, gap: 10 },
   feynmanIcon: { width: 60, height: 60, borderRadius: 20, alignItems: "center", justifyContent: "center" },
@@ -394,11 +417,7 @@ const styles = StyleSheet.create({
   },
   lockTxt: { fontSize: 13 },
   lockSubTxt: { fontSize: 11, marginTop: 1 },
-  upgradePill: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 10,
-  },
+  upgradePill: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10 },
   upgradePillTxt: { fontSize: 12, color: "#FFFFFF" },
   sessionsLeft: { fontSize: 13 },
   topicsLabel: { fontSize: 11, letterSpacing: 1.2, marginTop: 8, alignSelf: "flex-start" },
@@ -413,18 +432,13 @@ const styles = StyleSheet.create({
   topicTxt: { fontSize: 14 },
   msgRow: { flexDirection: "row", alignItems: "flex-end", gap: 8, maxWidth: "90%" },
   msgRowUser: { alignSelf: "flex-end", flexDirection: "row-reverse" },
-  aiIcon: {
-    width: 28,
-    height: 28,
-    borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 2,
-  },
+  aiIcon: { width: 28, height: 28, borderRadius: 10, alignItems: "center", justifyContent: "center", marginBottom: 2 },
   bubble: { maxWidth: "82%", padding: 12, borderRadius: 16 },
   bubbleTxt: { fontSize: 14, lineHeight: 20 },
   emptyChat: { alignItems: "center", gap: 12, paddingTop: 60 },
-  emptyChatTxt: { fontSize: 14, textAlign: "center" },
+  emptyIcon: { width: 72, height: 72, borderRadius: 24, alignItems: "center", justifyContent: "center", marginBottom: 4 },
+  emptyChatTitle: { fontSize: 17 },
+  emptyChatTxt: { fontSize: 14, textAlign: "center", lineHeight: 20, paddingHorizontal: 32 },
   inputBar: {
     flexDirection: "row",
     alignItems: "flex-end",
