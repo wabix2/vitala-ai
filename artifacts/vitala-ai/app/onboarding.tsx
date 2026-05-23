@@ -1,7 +1,9 @@
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import { LinearGradient } from "expo-linear-gradient";
+import React, { useEffect, useRef, useState } from "react";
 import {
+  Animated,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -15,10 +17,10 @@ import { Ionicons } from "@expo/vector-icons";
 import { useUser } from "@/context/UserContext";
 
 const FEATURES = [
-  { icon: "bulb-outline" as const, color: "#F59E0B", text: "AI-powered Feynman tutoring" },
-  { icon: "help-circle-outline" as const, color: "#1D72E8", text: "Adaptive quizzes with instant XP" },
-  { icon: "trophy-outline" as const, color: "#10B981", text: "Global leaderboard rankings" },
-  { icon: "share-social-outline" as const, color: "#F97316", text: "Shareable achievement cards" },
+  { icon: "bulb-outline" as const, color: "#3B82F6", label: "AI-powered Feynman tutoring" },
+  { icon: "help-circle-outline" as const, color: "#10B981", label: "Adaptive quizzes with instant XP" },
+  { icon: "trophy-outline" as const, color: "#F59E0B", label: "Global leaderboard rankings" },
+  { icon: "share-social-outline" as const, color: "#8B5CF6", label: "Shareable achievement cards" },
 ];
 
 export default function OnboardingScreen() {
@@ -26,8 +28,17 @@ export default function OnboardingScreen() {
   const { completeOnboarding } = useUser();
   const [name, setName] = useState("");
   const [focused, setFocused] = useState(false);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(24)).current;
 
   const canContinue = name.trim().length >= 2;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, { toValue: 1, duration: 700, useNativeDriver: true }),
+      Animated.timing(slideAnim, { toValue: 0, duration: 600, useNativeDriver: true }),
+    ]).start();
+  }, [fadeAnim, slideAnim]);
 
   const handleStart = () => {
     if (!canContinue) return;
@@ -41,11 +52,24 @@ export default function OnboardingScreen() {
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <View style={[styles.inner, { paddingTop: insets.top + 32, paddingBottom: insets.bottom + 24 }]}>
+      <LinearGradient
+        colors={["#0F172A", "#1E293B", "#1E3A5F"]}
+        style={StyleSheet.absoluteFill}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      />
+
+      <Animated.View
+        style={[
+          styles.inner,
+          { paddingTop: insets.top + 40, paddingBottom: insets.bottom + 32 },
+          { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
+        ]}
+      >
         {/* Brand */}
         <View style={styles.brand}>
           <View style={styles.logoRing}>
-            <Ionicons name="school" size={34} color="#1D72E8" />
+            <Ionicons name="school" size={34} color="#60A5FA" />
           </View>
           <Text style={styles.appName}>Vitala AI</Text>
           <Text style={styles.tagline}>Study smarter. Level up faster.</Text>
@@ -55,10 +79,10 @@ export default function OnboardingScreen() {
         <View style={styles.features}>
           {FEATURES.map((f, i) => (
             <View key={i} style={styles.featureRow}>
-              <View style={[styles.featureIcon, { backgroundColor: f.color + "15" }]}>
+              <View style={[styles.featureIcon, { backgroundColor: f.color + "20" }]}>
                 <Ionicons name={f.icon} size={20} color={f.color} />
               </View>
-              <Text style={styles.featureTxt}>{f.text}</Text>
+              <Text style={styles.featureTxt}>{f.label}</Text>
             </View>
           ))}
         </View>
@@ -67,11 +91,11 @@ export default function OnboardingScreen() {
         <View style={styles.inputSection}>
           <Text style={styles.inputLabel}>What should we call you?</Text>
           <View style={[styles.inputWrap, focused && styles.inputWrapFocused]}>
-            <Ionicons name="person-outline" size={18} color={focused ? "#1D72E8" : "#94A3B8"} />
+            <Ionicons name="person-outline" size={18} color={focused ? "#60A5FA" : "#64748B"} />
             <TextInput
               style={styles.input}
               placeholder="Enter your name..."
-              placeholderTextColor="#CBD5E1"
+              placeholderTextColor="#475569"
               value={name}
               onChangeText={setName}
               onFocus={() => setFocused(true)}
@@ -89,75 +113,83 @@ export default function OnboardingScreen() {
           style={({ pressed }) => [
             styles.startBtn,
             !canContinue && styles.startBtnDisabled,
-            pressed && canContinue && styles.startBtnPressed,
+            pressed && canContinue && { opacity: 0.9 },
           ]}
           onPress={handleStart}
           disabled={!canContinue}
         >
-          <Text style={styles.startTxt}>Start Learning</Text>
-          <Ionicons name="arrow-forward" size={18} color="#fff" />
+          {canContinue ? (
+            <LinearGradient
+              colors={["#3B82F6", "#1D72E8"]}
+              style={styles.startBtnGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+            >
+              <Text style={styles.startTxt}>Start Learning</Text>
+              <Ionicons name="arrow-forward" size={18} color="#fff" />
+            </LinearGradient>
+          ) : (
+            <View style={styles.startBtnGradient}>
+              <Text style={[styles.startTxt, { color: "#64748B" }]}>Start Learning</Text>
+              <Ionicons name="arrow-forward" size={18} color="#64748B" />
+            </View>
+          )}
         </Pressable>
 
         <Text style={styles.fine}>Free forever · No account needed</Text>
-      </View>
+      </Animated.View>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FFFFFF" },
+  container: { flex: 1 },
   inner: { flex: 1, paddingHorizontal: 28, justifyContent: "space-between" },
-  brand: { alignItems: "center", gap: 12 },
+  brand: { alignItems: "center", gap: 14 },
   logoRing: {
-    width: 80,
-    height: 80,
-    borderRadius: 24,
-    backgroundColor: "#EFF6FF",
+    width: 84,
+    height: 84,
+    borderRadius: 26,
+    backgroundColor: "rgba(59,130,246,0.15)",
     borderWidth: 1.5,
-    borderColor: "#DBEAFE",
+    borderColor: "rgba(59,130,246,0.3)",
     alignItems: "center",
     justifyContent: "center",
   },
-  appName: { fontSize: 36, color: "#111827", letterSpacing: -0.5, fontFamily: "Inter_700Bold" },
-  tagline: { fontSize: 15, color: "#64748B", textAlign: "center", fontFamily: "Inter_400Regular" },
-  features: { gap: 16 },
+  appName: { fontSize: 36, color: "#F1F5F9", letterSpacing: -0.5, fontFamily: "Inter_700Bold" },
+  tagline: { fontSize: 15, color: "#94A3B8", textAlign: "center", fontFamily: "Inter_400Regular" },
+  features: { gap: 18 },
   featureRow: { flexDirection: "row", alignItems: "center", gap: 14 },
-  featureIcon: { width: 44, height: 44, borderRadius: 12, alignItems: "center", justifyContent: "center" },
-  featureTxt: { fontSize: 15, color: "#374151", flex: 1, fontFamily: "Inter_500Medium" },
+  featureIcon: { width: 44, height: 44, borderRadius: 13, alignItems: "center", justifyContent: "center" },
+  featureTxt: { fontSize: 15, color: "#CBD5E1", flex: 1, fontFamily: "Inter_500Medium" },
   inputSection: { gap: 10 },
-  inputLabel: { fontSize: 16, color: "#111827", fontFamily: "Inter_600SemiBold" },
+  inputLabel: { fontSize: 16, color: "#F1F5F9", fontFamily: "Inter_600SemiBold" },
   inputWrap: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    backgroundColor: "#F8FAFC",
+    backgroundColor: "rgba(30,41,59,0.8)",
     borderWidth: 1.5,
-    borderColor: "#E2E8F0",
+    borderColor: "#334155",
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 14,
   },
   inputWrapFocused: {
-    borderColor: "#1D72E8",
-    backgroundColor: "#FFFFFF",
+    borderColor: "#3B82F6",
+    backgroundColor: "rgba(30,41,59,1)",
   },
-  input: { flex: 1, fontSize: 16, fontFamily: "Inter_500Medium", color: "#111827" },
-  startBtn: {
+  input: { flex: 1, fontSize: 16, fontFamily: "Inter_500Medium", color: "#F1F5F9" },
+  startBtn: { borderRadius: 16, overflow: "hidden" },
+  startBtnDisabled: { opacity: 0.4 },
+  startBtnGradient: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 10,
     paddingVertical: 18,
-    borderRadius: 16,
-    backgroundColor: "#1D72E8",
-    shadowColor: "#1D72E8",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+    backgroundColor: "#1E293B",
   },
-  startBtnDisabled: { backgroundColor: "#CBD5E1", shadowOpacity: 0, elevation: 0 },
-  startBtnPressed: { opacity: 0.9, transform: [{ scale: 0.98 }] },
   startTxt: { color: "#fff", fontSize: 17, fontFamily: "Inter_700Bold" },
-  fine: { fontSize: 12, color: "#94A3B8", textAlign: "center", fontFamily: "Inter_400Regular" },
+  fine: { fontSize: 12, color: "#475569", textAlign: "center", fontFamily: "Inter_400Regular" },
 });
