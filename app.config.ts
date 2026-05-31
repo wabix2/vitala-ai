@@ -24,7 +24,7 @@ const config: ExpoConfig = {
   },
   extra: {
     eas: {
-      projectId: process.env.EXPO_PROJECT_ID
+      projectId: process.env.EXPO_PROJECT_ID ?? "11dd4a69-396e-493a-b4bc-f50a1c095a60"
     },
     geminiApiKey: process.env.GEMINI_API_KEY,
     appEnv: process.env.APP_ENV ?? "production"
