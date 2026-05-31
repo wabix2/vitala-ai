@@ -23,7 +23,8 @@
     "android": {
       "package": "com.vitala.ai",
       "permissions": [
-        "RECEIVE_BOOT_COMPLETED", "VIBRATE"
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE",
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE",
         "READ_MEDIA_IMAGES",
@@ -55,12 +56,15 @@
           "savePhotosPermission": "Vitala AI saves your achievement cards to your camera roll.",
           "isAccessMediaLocationEnabled": false
         }
-        ["expo-notifications", {
-  "icon": "./assets/images/icon.png",
-  "color": "#5B5FEF",
-  "androidMode": "default",
-  "androidCollapsedTitle": "Vitala AI"
-}]
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/icon.png",
+          "color": "#5B5FEF",
+          "androidMode": "default",
+          "androidCollapsedTitle": "Vitala AI"
+        }
       ]
     ],
     "experiments": {
@@ -69,8 +73,9 @@
     },
     "extra": {
       "eas": {
-        "projectId": "bd78c761-6c51-4664-8bd9-e14b6ceff45c"
+        "projectId": "7fa94ba0-7d79-4a06-a239-1def360dbbdf"
       }
-    }
+    },
+    "owner": "wabitafese"
   }
 }

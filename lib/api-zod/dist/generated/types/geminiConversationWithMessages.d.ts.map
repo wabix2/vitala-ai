@@ -1,0 +1,1 @@
+{"version":3,"file":"geminiConversationWithMessages.d.ts","sourceRoot":"","sources":["../../../src/generated/types/geminiConversationWithMessages.ts"],"names":[],"mappings":"AAAA;;;;;;GAMG;AACH,OAAO,KAAK,EAAE,aAAa,EAAE,MAAM,iBAAiB,CAAC;AAErD,MAAM,WAAW,8BAA8B;IAC7C,EAAE,EAAE,MAAM,CAAC;IACX,KAAK,EAAE,MAAM,CAAC;IACd,SAAS,EAAE,IAAI,CAAC;IAChB,QAAQ,EAAE,aAAa,EAAE,CAAC;CAC3B"}
