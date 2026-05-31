@@ -1,6 +1,7 @@
 .expo/
 .expo-shared/
 node_modules/
+.npm-cache/
 design-source/
 dist/
 build/
