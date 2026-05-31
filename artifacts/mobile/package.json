@@ -6,10 +6,13 @@
   "scripts": {
     "dev": "EXPO_PACKAGER_PROXY_URL=https://$REPLIT_EXPO_DEV_DOMAIN EXPO_PUBLIC_DOMAIN=$REPLIT_DEV_DOMAIN EXPO_PUBLIC_REPL_ID=$REPL_ID REACT_NATIVE_PACKAGER_HOSTNAME=$REPLIT_DEV_DOMAIN pnpm exec expo start --localhost --port $PORT",
     "build": "node scripts/build.js",
+    "prebuild:validate": "node scripts/prebuild-validate.js",
+    "build:apk": "node scripts/prebuild-validate.js && pnpm exec eas build --platform android --profile preview --non-interactive",
     "serve": "node server/serve.js",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {
+    "eas-cli": "^16.3.2",
     "expo-notifications": "~0.31.4",
     "@babel/core": "^7.25.2",
     "@expo-google-fonts/inter": "^0.4.0",
@@ -57,7 +60,8 @@
     "zod-validation-error": "^3.4.0"
   },
   "dependencies": {
-  "expo-clipboard": "^55.0.13",
+  "expo-sharing": "~14.0.8",
+  "react-native-view-shot": "^4.0.3",
   "expo-document-picker": "^55.0.13",
   "expo-file-system": "^55.0.19",
   "expo-media-library": "~17.1.7",

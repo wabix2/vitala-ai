@@ -28,7 +28,12 @@ import {
   clearBadge,
 } from "@/lib/notifications";
 
-setBaseUrl(`https://${process.env.EXPO_PUBLIC_DOMAIN}`);
+const apiBase =
+  process.env.EXPO_PUBLIC_API_URL ??
+  (process.env.EXPO_PUBLIC_DOMAIN
+    ? `https://${process.env.EXPO_PUBLIC_DOMAIN}`
+    : "");
+if (apiBase) setBaseUrl(apiBase);
 initializeRevenueCat();
 SplashScreen.preventAutoHideAsync();
 
@@ -114,6 +119,7 @@ function ThemedStack() {
         <Stack.Screen name="leaderboard" options={{ animation: "slide_from_right" }} />
         <Stack.Screen name="achievements" options={{ animation: "slide_from_right" }} />
         <Stack.Screen name="paywall" options={{ animation: "slide_from_bottom", presentation: "modal" }} />
+        <Stack.Screen name="feynman" options={{ animation: "slide_from_right" }} />
       </Stack>
       <AchievementToast />
     </>
