@@ -9,6 +9,8 @@ build/
 *.p8
 *.p12
 *.key
+credentials.json
+credentials/
 *.mobileprovision
 *.orig.*
 npm-debug.*

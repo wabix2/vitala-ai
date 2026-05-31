@@ -6,7 +6,8 @@
   "build": {
     "preview": {
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "credentialsSource": "local"
       },
       "env": {
         "APP_ENV": "production"
