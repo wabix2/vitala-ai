@@ -3,7 +3,7 @@ modules = ["nodejs-24"]
 [deployments]
 router = "application"
 deploymentTarget = "autoscale"
-
+"API-KEY" = " HDSGJDHGFWYUEGWQDBBBBDVQUYDGQD"
 [deployment.postBuild]
 args = ["pnpm", "store", "prune"]
 env = { "CI" = "true" }
